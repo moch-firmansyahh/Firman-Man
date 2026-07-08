@@ -1,0 +1,42 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  transactions Transaction[]
+  todos        Todo[]
+  createdAt    DateTime      @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  type      String
+  amount    Int
+  category  String
+  note      String?
+  date      DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Todo {
+  id        String   @id @default(uuid())
+  title     String
+  priority  String   // "low" | "medium" | "high"
+  status    String   // "pending" | "in_progress" | "completed"
+  category  String
+  deadline  DateTime?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
