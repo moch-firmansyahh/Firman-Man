@@ -123,20 +123,20 @@ export default function TodosPage() {
 
   const getPriorityStyle = (prio: Todo['priority']) => {
     switch (prio) {
-      case 'high': return 'bg-rose-955/20 text-rose-400 border border-rose-900/60';
-      case 'medium': return 'bg-amber-955/20 text-amber-400 border border-amber-900/60';
-      case 'low': return 'bg-zinc-900 text-zinc-400 border border-zinc-800';
+      case 'high': return 'bg-rose-50 text-rose-700 border-rose-200';
+      case 'medium': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'low': return 'bg-zinc-100 text-zinc-650 border-zinc-200';
     }
   };
 
   const getStatusIcon = (status: Todo['status']) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 cursor-pointer" />;
+        return <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 cursor-pointer" />;
       case 'in_progress':
-        return <Clock className="h-4.5 w-4.5 text-amber-400 cursor-pointer" />;
+        return <Clock className="h-4.5 w-4.5 text-amber-500 cursor-pointer" />;
       default:
-        return <Circle className="h-4.5 w-4.5 text-zinc-500 cursor-pointer" />;
+        return <Circle className="h-4.5 w-4.5 text-zinc-300 cursor-pointer" />;
     }
   };
 
@@ -145,8 +145,8 @@ export default function TodosPage() {
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-white tracking-tight">Daftar Tugas (To-Do List)</h2>
-          <p className="text-xs text-zinc-400">Atur prioritas tugas kuliah dan personal project Anda.</p>
+          <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">Daftar Tugas (To-Do List)</h2>
+          <p className="text-xs text-zinc-500">Atur prioritas tugas kuliah dan personal project Anda.</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -159,40 +159,40 @@ export default function TodosPage() {
 
       {/* Task Summary Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="shadcn-card p-4 space-y-1">
+        <div className="shadcn-card p-4 bg-white space-y-1">
           <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Total Tugas</p>
-          <p className="text-lg font-bold text-white">{summary?.total || 0}</p>
+          <p className="text-lg font-bold text-zinc-900">{summary?.total || 0}</p>
         </div>
-        <div className="shadcn-card p-4 space-y-1">
+        <div className="shadcn-card p-4 bg-white space-y-1">
           <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Belum Dikerjakan</p>
           <p className="text-lg font-bold text-zinc-400">{summary?.pending || 0}</p>
         </div>
-        <div className="shadcn-card p-4 space-y-1">
+        <div className="shadcn-card p-4 bg-white space-y-1">
           <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Sedang Dikerjakan</p>
-          <p className="text-lg font-bold text-amber-400">{summary?.inProgress || 0}</p>
+          <p className="text-lg font-bold text-amber-600">{summary?.inProgress || 0}</p>
         </div>
-        <div className="shadcn-card p-4 space-y-1">
+        <div className="shadcn-card p-4 bg-white space-y-1">
           <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Selesai</p>
-          <p className="text-lg font-bold text-emerald-400">{summary?.completed || 0}</p>
+          <p className="text-lg font-bold text-emerald-600">{summary?.completed || 0}</p>
         </div>
       </div>
 
       {/* Main Grid Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Filters Panel */}
-        <div className="shadcn-card p-5 space-y-4 lg:col-span-1">
-          <div className="flex items-center gap-2 text-white font-semibold text-xs border-b border-zinc-800 pb-2.5">
-            <Filter className="h-4 w-4 text-zinc-400" />
+        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-1">
+          <div className="flex items-center gap-2 text-zinc-900 font-semibold text-xs border-b border-zinc-200 pb-2.5">
+            <Filter className="h-4 w-4 text-zinc-500" />
             Filter
           </div>
 
           <form onSubmit={handleFilterSubmit} className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-400">Status</label>
+              <label className="text-xs font-medium text-zinc-700">Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
               >
                 <option value="">Semua Status</option>
                 <option value="pending">Belum Dikerjakan</option>
@@ -202,11 +202,11 @@ export default function TodosPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-400">Prioritas</label>
+              <label className="text-xs font-medium text-zinc-700">Prioritas</label>
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
               >
                 <option value="">Semua Prioritas</option>
                 <option value="high">Tinggi (High)</option>
@@ -216,11 +216,11 @@ export default function TodosPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-400">Kategori</label>
+              <label className="text-xs font-medium text-zinc-700">Kategori</label>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
               >
                 <option value="">Semua Kategori</option>
                 {categories.map((cat) => (
@@ -250,21 +250,21 @@ export default function TodosPage() {
         </div>
 
         {/* Tasks List */}
-        <div className="shadcn-card p-5 space-y-4 lg:col-span-3">
-          <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5">
-            <h3 className="text-sm font-semibold text-white">Daftar Kegiatan</h3>
-            <span className="text-[10px] text-zinc-500 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full">
+        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-3">
+          <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
+            <h3 className="text-sm font-semibold text-zinc-900">Daftar Kegiatan</h3>
+            <span className="text-[10px] text-zinc-500 bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded-full">
               {todos.length} Tugas
             </span>
           </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent"></div>
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent"></div>
               <p className="mt-3 text-[10px] text-zinc-500">Memuat data...</p>
             </div>
           ) : todos.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-xs">
+            <div className="text-center py-12 text-zinc-400 text-xs">
               Belum ada tugas tercatat.
             </div>
           ) : (
@@ -272,7 +272,7 @@ export default function TodosPage() {
               {todos.map((todo) => (
                 <div
                   key={todo.id}
-                  className={`flex items-center justify-between p-3.5 rounded-md border border-zinc-900 bg-zinc-950/20 hover:bg-zinc-900/10 transition-all group ${
+                  className={`flex items-center justify-between p-3.5 rounded-md border border-zinc-200 bg-zinc-50/50 hover:bg-zinc-50 transition-all group ${
                     todo.status === 'completed' ? 'opacity-60' : ''
                   }`}
                 >
@@ -285,29 +285,29 @@ export default function TodosPage() {
                     </button>
 
                     <div className="min-w-0 space-y-1">
-                      <p className={`font-medium text-xs text-zinc-200 truncate ${
-                        todo.status === 'completed' ? 'line-through text-zinc-500' : ''
+                      <p className={`font-medium text-xs text-zinc-800 truncate ${
+                        todo.status === 'completed' ? 'line-through text-zinc-400' : ''
                       }`}>
                         {todo.title}
                       </p>
                       
-                      <div className="flex flex-wrap gap-2.5 items-center text-[9px] text-zinc-550">
+                      <div className="flex flex-wrap gap-2.5 items-center text-[9px] text-zinc-500">
                         <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide border ${getPriorityStyle(todo.priority)}`}>
                           {todo.priority}
                         </span>
                         
                         <span className="flex items-center gap-1">
-                          <Tag className="h-3 w-3 text-zinc-650" />
+                          <Tag className="h-3 w-3 text-zinc-400" />
                           {todo.category}
                         </span>
 
                         {todo.deadline && (
                           <span className={`flex items-center gap-1 ${
                             todo.status !== 'completed' && new Date(todo.deadline) < new Date()
-                              ? 'text-rose-400 font-bold'
-                              : 'text-zinc-500'
+                              ? 'text-rose-600 font-bold'
+                              : 'text-zinc-400'
                           }`}>
-                            <Calendar className="h-3 w-3 text-zinc-650" />
+                            <Calendar className="h-3 w-3 text-zinc-400" />
                             {new Date(todo.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                             {todo.status !== 'completed' && new Date(todo.deadline) < new Date() && ' (Terlambat)'}
                           </span>
@@ -319,14 +319,14 @@ export default function TodosPage() {
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <button
                       onClick={() => handleOpenEdit(todo)}
-                      className="p-1 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 rounded transition-all"
+                      className="p-1 hover:bg-zinc-150 text-zinc-500 hover:text-zinc-800 rounded transition-all"
                       title="Ubah"
                     >
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(todo.id)}
-                      className="p-1 hover:bg-zinc-800 text-zinc-500 hover:text-rose-450 rounded transition-all"
+                      className="p-1 hover:bg-rose-50 text-zinc-400 hover:text-rose-600 rounded transition-all"
                       title="Hapus"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -342,16 +342,16 @@ export default function TodosPage() {
       {/* Popup Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsFormOpen(false)} />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setIsFormOpen(false)} />
 
-          <div className="relative w-full max-w-md shadcn-card p-5 shadow-lg animate-scale-up space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-              <h3 className="text-sm font-semibold text-white">
+          <div className="relative w-full max-w-md shadcn-card bg-white p-5 shadow-lg animate-scale-up space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+              <h3 className="text-sm font-semibold text-zinc-900">
                 {editingTodo ? 'Ubah Tugas' : 'Tambah Tugas'}
               </h3>
               <button
                 onClick={() => setIsFormOpen(false)}
-                className="p-1 text-zinc-500 hover:text-zinc-350"
+                className="p-1 text-zinc-400 hover:text-zinc-650"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -359,24 +359,24 @@ export default function TodosPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-medium text-zinc-400">Judul Kegiatan</label>
+                <label className="text-xs font-medium text-zinc-700">Judul Kegiatan</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="shadcn-input block w-full px-3 py-2 text-sm bg-zinc-950"
+                  className="shadcn-input block w-full px-3 py-2 text-sm bg-white border-zinc-200"
                   placeholder="Misalnya: Ngerjakan PR Alpro"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-400">Prioritas</label>
+                  <label className="text-xs font-medium text-zinc-700">Prioritas</label>
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value as Todo['priority'])}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
                   >
                     <option value="low">Rendah (Low)</option>
                     <option value="medium">Sedang (Medium)</option>
@@ -385,11 +385,11 @@ export default function TodosPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-400">Kategori</label>
+                  <label className="text-xs font-medium text-zinc-700">Kategori</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
                   >
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -400,21 +400,21 @@ export default function TodosPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-400">Deadline (Opsional)</label>
+                  <label className="text-xs font-medium text-zinc-700">Deadline (Opsional)</label>
                   <input
                     type="date"
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-400">Status</label>
+                  <label className="text-xs font-medium text-zinc-700">Status</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as Todo['status'])}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-zinc-950"
+                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
                   >
                     <option value="pending">Belum Dikerjakan</option>
                     <option value="in_progress">Sedang Dikerjakan</option>

@@ -25,28 +25,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 bg-[#09090b]">
+    <div className="flex min-h-screen items-center justify-center px-4 bg-zinc-50">
       <div className="w-full max-w-[380px] space-y-6">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
             Masuk ke FirmanMan
           </h1>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-zinc-500">
             Masukkan email dan password untuk masuk ke akun Anda
           </p>
         </div>
 
-        <div className="shadcn-card p-6 shadow-sm space-y-6">
+        <div className="shadcn-card p-6 shadow-sm bg-white space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2 rounded-md border border-red-900 bg-red-950/20 p-3 text-xs text-red-400">
+              <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-650">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-zinc-350">
+              <label className="text-xs font-medium text-zinc-700">
                 Email
               </label>
               <input
@@ -54,13 +54,13 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-sm placeholder-zinc-650"
+                className="shadcn-input block w-full px-3 py-2 text-sm placeholder-zinc-400 border-zinc-200 bg-white"
                 placeholder="nama@email.com"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-zinc-350">
+              <label className="text-xs font-medium text-zinc-700">
                 Password
               </label>
               <input
@@ -68,7 +68,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-sm placeholder-zinc-650"
+                className="shadcn-input block w-full px-3 py-2 text-sm placeholder-zinc-400 border-zinc-200 bg-white"
                 placeholder="••••••••"
               />
             </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
               className="shadcn-btn-primary w-full py-2 text-sm flex items-center justify-center disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-800 border-t-transparent"></div>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent"></div>
               ) : (
                 'Masuk dengan Email'
               )}
@@ -89,7 +89,7 @@ export default function LoginPage() {
 
         <p className="px-8 text-center text-xs text-zinc-500">
           Belum punya akun?{' '}
-          <Link href="/register" className="underline underline-offset-4 hover:text-zinc-300 font-semibold transition-all">
+          <Link href="/register" className="underline underline-offset-4 hover:text-zinc-800 font-semibold transition-all">
             Daftar sekarang
           </Link>
         </p>

@@ -63,59 +63,59 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Title */}
       <div>
-        <h2 className="text-xl font-semibold text-white tracking-tight">Dashboard Ringkasan</h2>
-        <p className="text-xs text-zinc-400">Ringkasan kondisi finansial harian dan progres tugas kuliah Anda.</p>
+        <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">Dashboard Ringkasan</h2>
+        <p className="text-xs text-zinc-500">Ringkasan kondisi finansial harian dan progres tugas kuliah Anda.</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Balance Card */}
-        <div className="shadcn-card p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-zinc-400">
+        <div className="shadcn-card p-5 shadow-sm bg-white space-y-1">
+          <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs font-medium">Saldo Dompet</span>
-            <Wallet className="h-4 w-4 text-zinc-500" />
+            <Wallet className="h-4 w-4 text-zinc-400" />
           </div>
-          <div className={`text-xl font-bold ${financeSummary ? (financeSummary.balance >= 0 ? 'text-emerald-400' : 'text-rose-400') : 'text-white'}`}>
+          <div className={`text-xl font-bold ${financeSummary ? (financeSummary.balance >= 0 ? 'text-emerald-600' : 'text-rose-600') : 'text-zinc-900'}`}>
             {financeSummary ? formatRupiah(financeSummary.balance) : 'Rp 0'}
           </div>
-          <p className="text-[10px] text-zinc-500">Keseimbangan saat ini</p>
+          <p className="text-[10px] text-zinc-400">Keseimbangan saat ini</p>
         </div>
 
         {/* Income Card */}
-        <div className="shadcn-card p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-zinc-400">
+        <div className="shadcn-card p-5 shadow-sm bg-white space-y-1">
+          <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs font-medium">Pemasukan Bulan Ini</span>
-            <ArrowUpRight className="h-4 w-4 text-emerald-500/80" />
+            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
           </div>
-          <div className="text-xl font-bold text-emerald-400">
+          <div className="text-xl font-bold text-emerald-600">
             {financeSummary ? formatRupiah(financeSummary.totalIncome) : 'Rp 0'}
           </div>
-          <p className="text-[10px] text-zinc-500">Aliran kas masuk</p>
+          <p className="text-[10px] text-zinc-400">Aliran kas masuk</p>
         </div>
 
         {/* Expense Card */}
-        <div className="shadcn-card p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-zinc-400">
+        <div className="shadcn-card p-5 shadow-sm bg-white space-y-1">
+          <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs font-medium">Pengeluaran Bulan Ini</span>
-            <ArrowDownRight className="h-4 w-4 text-rose-500/80" />
+            <ArrowDownRight className="h-4 w-4 text-rose-500" />
           </div>
-          <div className="text-xl font-bold text-rose-400">
+          <div className="text-xl font-bold text-rose-600">
             {financeSummary ? formatRupiah(financeSummary.totalExpense) : 'Rp 0'}
           </div>
-          <p className="text-[10px] text-zinc-500">Aliran kas keluar</p>
+          <p className="text-[10px] text-zinc-400">Aliran kas keluar</p>
         </div>
 
         {/* Progress Card */}
-        <div className="shadcn-card p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-zinc-400">
+        <div className="shadcn-card p-5 shadow-sm bg-white space-y-1">
+          <div className="flex items-center justify-between text-zinc-500">
             <span className="text-xs font-medium">Tugas Selesai</span>
-            <CheckSquare className="h-4 w-4 text-indigo-400" />
+            <CheckSquare className="h-4 w-4 text-indigo-600" />
           </div>
-          <div className="text-xl font-bold text-indigo-400">
+          <div className="text-xl font-bold text-indigo-600">
             {completionRate}%
           </div>
-          <div className="w-full bg-zinc-800 rounded-full h-1 mt-2">
-            <div className="bg-indigo-500 h-1 rounded-full transition-all duration-300" style={{ width: `${completionRate}%` }} />
+          <div className="w-full bg-zinc-100 rounded-full h-1 mt-2">
+            <div className="bg-indigo-600 h-1 rounded-full transition-all duration-300" style={{ width: `${completionRate}%` }} />
           </div>
         </div>
       </div>
@@ -123,35 +123,35 @@ export default function DashboardPage() {
       {/* Main Grid Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Expense Distribution Chart */}
-        <div className="shadcn-card p-5 space-y-4 lg:col-span-2">
-          <div className="flex items-center gap-2 border-b border-zinc-900 pb-3">
-            <BarChart3 className="h-4 w-4 text-zinc-400" />
-            <h3 className="text-sm font-semibold text-white">Distribusi Pengeluaran</h3>
+        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-2">
+          <div className="flex items-center gap-2 border-b border-zinc-200 pb-3">
+            <BarChart3 className="h-4 w-4 text-zinc-500" />
+            <h3 className="text-sm font-semibold text-zinc-900">Distribusi Pengeluaran</h3>
           </div>
 
           <div className="h-60 w-full text-xs">
             {transactions.filter(t => t.type === 'expense').length === 0 ? (
-              <div className="h-full flex items-center justify-center text-zinc-500">
+              <div className="h-full flex items-center justify-center text-zinc-400">
                 Belum ada transaksi pengeluaran.
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
                   <XAxis dataKey="name" stroke="#71717a" fontSize={10} tickLine={false} />
                   <YAxis stroke="#71717a" fontSize={10} tickLine={false} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#09090b',
-                      border: '1px solid #27272a',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e4e4e7',
                       borderRadius: '8px',
-                      color: '#fafafa',
+                      color: '#09090b',
                     }}
                     formatter={(val) => [formatRupiah(Number(val)), 'Pengeluaran']}
                   />
-                  <Bar dataKey="Pengeluaran" fill="#fafafa" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="Pengeluaran" fill="#18181b" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#e4e4e7' : '#71717a'} />
+                      <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#18181b' : '#71717a'} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -161,29 +161,29 @@ export default function DashboardPage() {
         </div>
 
         {/* Approaching Deadline Tasks */}
-        <div className="shadcn-card p-5 space-y-4 lg:col-span-1">
-          <div className="flex items-center gap-2 border-b border-zinc-900 pb-3">
+        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-1">
+          <div className="flex items-center gap-2 border-b border-zinc-200 pb-3">
             <AlertTriangle className="h-4 w-4 text-rose-500" />
-            <h3 className="text-sm font-semibold text-white">Tugas Terdekat</h3>
+            <h3 className="text-sm font-semibold text-zinc-900">Tugas Terdekat</h3>
           </div>
 
           <div className="space-y-3">
             {!todoSummary || todoSummary.approachingDeadline.length === 0 ? (
-              <div className="py-8 text-center text-zinc-500 text-xs">
+              <div className="py-8 text-center text-zinc-400 text-xs">
                 Tidak ada tugas yang memiliki deadline dekat.
               </div>
             ) : (
               todoSummary.approachingDeadline.map((todo) => {
                 const isOverdue = todo.deadline && new Date(todo.deadline) < new Date();
                 return (
-                  <div key={todo.id} className="flex flex-col p-3 bg-zinc-900/30 border border-zinc-900 rounded-md">
-                    <span className="font-semibold text-xs text-zinc-200 truncate">{todo.title}</span>
-                    <div className="flex items-center justify-between text-[9px] text-zinc-500 mt-2">
-                      <span className="capitalize font-medium text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
+                  <div key={todo.id} className="flex flex-col p-3 bg-zinc-50 border border-zinc-200 rounded-md">
+                    <span className="font-semibold text-xs text-zinc-800 truncate">{todo.title}</span>
+                    <div className="flex items-center justify-between text-[9px] text-zinc-550 mt-2">
+                      <span className="capitalize font-semibold text-zinc-700 bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 rounded">
                         {todo.priority}
                       </span>
                       {todo.deadline && (
-                        <span className={isOverdue ? 'text-rose-400 font-bold' : ''}>
+                        <span className={isOverdue ? 'text-rose-600 font-bold' : ''}>
                           {new Date(todo.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                           {isOverdue && ' (Terlambat)'}
                         </span>
