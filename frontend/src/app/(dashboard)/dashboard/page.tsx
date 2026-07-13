@@ -195,7 +195,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Grid Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Area Chart matching User Request */}
         <Card className="lg:col-span-2 shadow-sm">
           <CardContent className="pt-6 space-y-4">
@@ -250,47 +250,55 @@ export default function DashboardPage() {
             </div>
 
             {/* Area Chart View */}
-            <div className="h-60 w-full text-xs">
+            <div className="w-full text-xs overflow-x-auto scrollbar-thin">
               {transactions.filter(t => t.type === 'expense').length === 0 ? (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
+                <div className="h-60 flex items-center justify-center text-muted-foreground">
                   Belum ada transaksi pengeluaran.
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke={axisColor} 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      dy={10}
-                    />
-                    <YAxis 
-                      stroke={axisColor} 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      dx={-5}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="Pengeluaran"
-                      stroke="#14b8a6"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorExpense)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <div 
+                  className="h-60" 
+                  style={{ 
+                    width: chartData.length > 5 ? `${chartData.length * 100}px` : '100%', 
+                    minWidth: '100%' 
+                  }}
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#14b8a6" stopOpacity={0.0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke={axisColor} 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false}
+                        dy={10}
+                      />
+                      <YAxis 
+                        stroke={axisColor} 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false}
+                        dx={-5}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="Pengeluaran"
+                        stroke="#14b8a6"
+                        strokeWidth={2}
+                        fillOpacity={1}
+                        fill="url(#colorExpense)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               )}
             </div>
           </CardContent>
@@ -305,7 +313,7 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[210px] overflow-y-auto pr-1">
               {!todoSummary || todoSummary.approachingDeadline.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground text-xs">
                   Tidak ada tugas yang memiliki deadline dekat.
