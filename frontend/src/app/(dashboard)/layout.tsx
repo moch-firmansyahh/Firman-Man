@@ -6,6 +6,14 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Wallet, CheckSquare, LogOut, Menu, X, User } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -101,8 +109,41 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground font-medium hidden md:inline mr-2">Halo, {user?.name}</span>
             <ThemeToggle />
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger render={
+                <button className="h-8 w-8 rounded-full bg-muted hover:bg-accent border border-border text-xs font-bold flex items-center justify-center shadow-sm cursor-pointer text-foreground focus:outline-none transition-all">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </button>
+              } />
+              <DropdownMenuContent align="end" className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[200px]">
+                <DropdownMenuLabel className="px-2.5 py-2">
+                  <div className="flex flex-col space-y-0.5">
+                    <p className="text-xs font-semibold text-foreground">{user?.name}</p>
+                    <p className="text-[10px] text-muted-foreground font-normal truncate">{user?.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem render={<Link href="/dashboard" />} className="rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium">
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem render={<Link href="/finance" />} className="rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium">
+                  <Wallet className="h-3.5 w-3.5" />
+                  Keuangan
+                </DropdownMenuItem>
+                <DropdownMenuItem render={<Link href="/todos" />} className="rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium">
+                  <CheckSquare className="h-3.5 w-3.5" />
+                  Tugas
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="rounded-md hover:bg-destructive/10 hover:text-destructive text-destructive cursor-pointer flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold">
+                  <LogOut className="h-3.5 w-3.5" />
+                  Keluar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
