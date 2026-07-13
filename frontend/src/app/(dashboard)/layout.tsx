@@ -118,12 +118,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               } />
               <DropdownMenuContent align="end" className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[200px]">
-                <DropdownMenuLabel className="px-2.5 py-2">
-                  <div className="flex flex-col space-y-0.5">
-                    <p className="text-xs font-semibold text-foreground">{user?.name}</p>
-                    <p className="text-[10px] text-muted-foreground font-normal truncate">{user?.email}</p>
-                  </div>
-                </DropdownMenuLabel>
+                <div className="px-2.5 py-2 flex flex-col space-y-0.5 select-none">
+                  <p className="text-xs font-semibold text-foreground">{user?.name}</p>
+                  <p className="text-[10px] text-muted-foreground font-normal truncate">{user?.email}</p>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem render={<Link href="/dashboard" />} className="rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium">
                   <LayoutDashboard className="h-3.5 w-3.5" />
