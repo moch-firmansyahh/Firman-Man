@@ -11,7 +11,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -48,13 +47,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const getCategoryColor = (cat: string) => {
     switch (cat) {
       case 'Tugas Besar':
-        return 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400';
+        return 'bg-[#8b5cf6] text-white'; // Solid Violet 500
       case 'Personal Project':
-        return 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400';
+        return 'bg-[#0ea5e9] text-white'; // Solid Sky 500
       case 'Kuliah':
-        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400';
+        return 'bg-[#10b981] text-white'; // Solid Emerald 500
       default:
-        return 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400';
+        return 'bg-[#f97316] text-white'; // Solid Orange 500
     }
   };
 
@@ -146,8 +145,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* "Tugas Terdekat" (Closure.ai Recent Cases style section) */}
           {!sidebarCollapsed && upcomingTasks.length > 0 && (
-            <div className="mt-8 px-3.5 space-y-2.5 transition-all duration-300">
-              <p className="text-[9px] font-bold text-muted-foreground/80 uppercase tracking-wider">
+            <div className="mt-7 px-3.5 space-y-2 transition-all duration-300">
+              <p className="text-xs font-medium text-[#71717a] dark:text-[#a1a1aa] px-1 mb-1">
                 Tugas Terdekat
               </p>
               <div className="space-y-2">
@@ -155,12 +154,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     key={task.id}
                     href="/todos"
-                    className="flex items-center gap-2 group min-w-0"
+                    className="flex items-center gap-2 px-1 py-0.5 rounded-md hover:bg-muted/30 group min-w-0"
                   >
-                    <div className={`h-5.5 w-5.5 rounded-full flex items-center justify-center font-bold text-[9px] shrink-0 border border-current/15 ${getCategoryColor(task.category)}`}>
+                    {/* Solid circle with white bold initials */}
+                    <div className={`h-5 w-5 rounded-full flex items-center justify-center font-bold text-[9px] shrink-0 shadow-sm ${getCategoryColor(task.category)}`}>
                       {task.category.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-[10px] text-muted-foreground group-hover:text-foreground truncate font-medium">
+                    <span className="text-xs text-[#18181b] dark:text-[#f4f4f5] group-hover:text-foreground truncate font-medium">
                       {task.title}
                     </span>
                   </Link>
