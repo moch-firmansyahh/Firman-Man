@@ -487,7 +487,7 @@ export default function FinancePage() {
                 Belum ada transaksi tercatat.
               </div>
             ) : (
-              <div className="divide-y divide-border space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+              <div className="divide-y divide-border space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
                 {displayedTransactions.map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between py-2.5 hover:bg-muted/30 px-2 rounded-md transition-all group">
                     <div className="flex items-center gap-3 min-w-0">
