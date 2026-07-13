@@ -203,9 +203,15 @@ export default function FinancePage() {
 
   // Filters
   const [filterCategory, setFilterCategory] = useState('all');
+  const [filterType, setFilterType] = useState('all'); // 'all' | 'income' | 'expense'
   const [dateRangePreset, setDateRangePreset] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+
+  const displayedTransactions = transactions.filter((tx) => {
+    if (filterType === 'all') return true;
+    return tx.type === filterType;
+  });
 
   const categories = ['Makan', 'Transport', 'Kebutuhan Kuliah', 'Hiburan', 'Tabungan', 'Lainnya'];
 
@@ -269,6 +275,7 @@ export default function FinancePage() {
 
   const handleClearFilters = () => {
     setFilterCategory('all');
+    setFilterType('all');
     setDateRangePreset('all');
     setStartDate('');
     setEndDate('');
@@ -382,17 +389,49 @@ export default function FinancePage() {
               <p className="text-[10px] text-muted-foreground mt-0.5">Kelola dan pantau seluruh transaksi keuangan Anda.</p>
             </div>
             <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full w-fit">
-              {transactions.length} Item
+              {displayedTransactions.length} Item
             </span>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
             {/* Horizontal Filter Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-border/40">
-              <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-border/40">
+              {/* Segmented Controls for Transaction Type */}
+              <div className="bg-[#f4f4f5] dark:bg-zinc-900/60 p-0.5 rounded-lg flex items-center gap-0.5 text-[11px] font-semibold text-muted-foreground w-fit shrink-0">
+                {[
+                  { id: 'all', label: 'Semua', count: transactions.length },
+                  { id: 'income', label: 'Pemasukan', count: transactions.filter(t => t.type === 'income').length },
+                  { id: 'expense', label: 'Pengeluaran', count: transactions.filter(t => t.type === 'expense').length },
+                ].map((tab) => {
+                  const isActive = filterType === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setFilterType(tab.id)}
+                      className={`px-3 py-1.5 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-white dark:bg-zinc-850 text-foreground shadow-xs font-bold'
+                          : 'hover:text-foreground hover:bg-zinc-200/40 dark:hover:bg-zinc-800/20'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full transition-colors duration-200 ${
+                        isActive 
+                          ? 'bg-zinc-100 dark:bg-zinc-900 text-foreground' 
+                          : 'bg-zinc-200/50 dark:bg-zinc-800/60 text-muted-foreground/80'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 {/* Category Selector */}
                 <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val || 'all')}>
                   <SelectTrigger className="h-8 text-[11px] min-w-[120px] bg-background border border-border rounded-md px-2.5 py-1">
-                    <SelectValue placeholder="Kategori" />
+                    <span>{filterCategory === 'all' ? 'Semua Kategori' : filterCategory}</span>
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
                     <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Kategori</SelectItem>
@@ -405,7 +444,13 @@ export default function FinancePage() {
                 {/* Date Range Preset Selector */}
                 <Select value={dateRangePreset} onValueChange={handleRangeChange}>
                   <SelectTrigger className="h-8 text-[11px] min-w-[140px] bg-background border border-border rounded-md px-2.5 py-1">
-                    <SelectValue placeholder="Rentang Waktu" />
+                    <span>
+                      {dateRangePreset === 'all' ? 'Semua Waktu' :
+                       dateRangePreset === 'today' ? 'Hari Ini' :
+                       dateRangePreset === 'last_7_days' ? '7 Hari Terakhir' :
+                       dateRangePreset === 'last_30_days' ? '30 Hari Terakhir' :
+                       dateRangePreset === 'this_month' ? 'Bulan Ini' : 'Bulan Lalu'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[140px]">
                     <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Waktu</SelectItem>
@@ -418,7 +463,7 @@ export default function FinancePage() {
                 </Select>
 
                 {/* Reset button inline if filter is active */}
-                {(filterCategory !== 'all' || dateRangePreset !== 'all') && (
+                {(filterCategory !== 'all' || dateRangePreset !== 'all' || filterType !== 'all') && (
                   <Button
                     type="button"
                     variant="outline"
@@ -437,13 +482,13 @@ export default function FinancePage() {
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                 <p className="mt-3 text-[10px] text-muted-foreground">Memuat data...</p>
               </div>
-            ) : transactions.length === 0 ? (
+            ) : displayedTransactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground text-xs">
                 Belum ada transaksi tercatat.
               </div>
             ) : (
               <div className="divide-y divide-border space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
-                {transactions.map((tx) => (
+                {displayedTransactions.map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between py-2.5 hover:bg-muted/30 px-2 rounded-md transition-all group">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 border ${

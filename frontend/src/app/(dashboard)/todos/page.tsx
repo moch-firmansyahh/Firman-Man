@@ -350,7 +350,6 @@ export default function TodosPage() {
                 {[
                   { id: 'all', label: 'Semua', count: summary?.total || 0 },
                   { id: 'pending', label: 'Belum', count: summary?.pending || 0 },
-                  { id: 'in_progress', label: 'Sedang', count: summary?.inProgress || 0 },
                   { id: 'completed', label: 'Selesai', count: summary?.completed || 0 },
                 ].map((tab) => {
                   const isActive = filterStatus === tab.id;
@@ -383,7 +382,11 @@ export default function TodosPage() {
                 {/* Priority Selector */}
                 <Select value={filterPriority} onValueChange={(val) => setFilterPriority(val || 'all')}>
                   <SelectTrigger className="h-8 text-[11px] min-w-[120px] bg-background border border-border rounded-md px-2.5 py-1">
-                    <SelectValue placeholder="Prioritas" />
+                    <span>
+                      {filterPriority === 'all' ? 'Semua Prioritas' :
+                       filterPriority === 'high' ? 'Tinggi' :
+                       filterPriority === 'medium' ? 'Sedang' : 'Rendah'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
                     <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Prioritas</SelectItem>
@@ -396,7 +399,7 @@ export default function TodosPage() {
                 {/* Category Selector */}
                 <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val || 'all')}>
                   <SelectTrigger className="h-8 text-[11px] min-w-[120px] bg-background border border-border rounded-md px-2.5 py-1">
-                    <SelectValue placeholder="Kategori" />
+                    <span>{filterCategory === 'all' ? 'Semua Kategori' : filterCategory}</span>
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
                     <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Kategori</SelectItem>
