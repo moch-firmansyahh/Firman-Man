@@ -208,25 +208,23 @@ export default function FinancePage() {
 
   const categories = ['Makan', 'Transport', 'Kebutuhan Kuliah', 'Hiburan', 'Tabungan', 'Lainnya'];
 
+  // Reactive Auto Filtering
   useEffect(() => {
-    fetchTransactions();
-    fetchSummary();
-  }, [fetchTransactions, fetchSummary]);
-
-  const handleFilterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     fetchTransactions({
       category: filterCategory === 'all' ? undefined : filterCategory,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
-  };
+  }, [filterCategory, startDate, endDate, fetchTransactions]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary, transactions]); // refetch summary when transactions changes
 
   const handleClearFilters = () => {
     setFilterCategory('all');
     setStartDate('');
     setEndDate('');
-    fetchTransactions();
   };
 
   const handleOpenAdd = () => {
@@ -328,82 +326,72 @@ export default function FinancePage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Filters Panel */}
-        <Card className="shadow-sm lg:col-span-1">
-          <CardHeader className="flex flex-row items-center gap-2 border-b border-border pb-2.5">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-xs font-semibold">Filter</CardTitle>
+      <div className="w-full">
+        {/* Transactions List */}
+        <Card className="shadow-sm w-full">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3 gap-3">
+            <div>
+              <CardTitle className="text-sm font-semibold">Riwayat Transaksi</CardTitle>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Kelola dan pantau seluruh transaksi keuangan Anda.</p>
+            </div>
+            <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full w-fit">
+              {transactions.length} Item
+            </span>
           </CardHeader>
-          <CardContent className="pt-4">
-            <form onSubmit={handleFilterSubmit} className="space-y-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Kategori</label>
+          <CardContent className="pt-4 space-y-4">
+            {/* Horizontal Filter Toolbar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-border/40">
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Category Selector */}
                 <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val || 'all')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Pilih Kategori" />
+                  <SelectTrigger className="h-8 text-[11px] min-w-[120px] bg-background border border-border rounded-md px-2.5 py-1">
+                    <SelectValue placeholder="Kategori" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
-                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Kategori</SelectItem>
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Kategori</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer text-xs">{cat}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Tanggal Mulai</label>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full text-xs bg-background"
-                />
-              </div>
+                {/* Start Date Input */}
+                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2.5 h-8">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase">Mulai</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="bg-transparent text-[11px] border-none outline-none focus:ring-0 text-foreground w-[110px]"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Tanggal Selesai</label>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full text-xs bg-background"
-                />
-              </div>
+                {/* End Date Input */}
+                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2.5 h-8">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase">Selesai</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="bg-transparent text-[11px] border-none outline-none focus:ring-0 text-foreground w-[110px]"
+                  />
+                </div>
 
-              <div className="pt-2 space-y-2">
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  className="w-full text-xs cursor-pointer py-1"
-                >
-                  Terapkan Filter
-                </Button>
+                {/* Reset button inline if filter is active */}
                 {(filterCategory !== 'all' || startDate || endDate) && (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleClearFilters}
-                    className="w-full text-xs cursor-pointer py-1"
+                    className="h-8 text-[11px] px-2.5 cursor-pointer hover:bg-muted border border-dashed border-border"
                   >
-                    Reset Filter
+                    Reset
                   </Button>
                 )}
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
 
-        {/* Transactions List */}
-        <Card className="shadow-sm lg:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-2.5">
-            <CardTitle className="text-sm font-semibold">Riwayat Transaksi</CardTitle>
-            <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
-              {transactions.length} Item
-            </span>
-          </CardHeader>
-          <CardContent className="pt-4">
+            <div className="pt-1">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
@@ -469,6 +457,7 @@ export default function FinancePage() {
                 ))}
               </div>
             )}
+            </div>
           </CardContent>
         </Card>
       </div>

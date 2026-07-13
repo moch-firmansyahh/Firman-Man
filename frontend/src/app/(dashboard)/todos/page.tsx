@@ -201,25 +201,23 @@ export default function TodosPage() {
 
   const categories = ['Kuliah', 'Tugas Besar', 'Personal Project', 'Pekerjaan Rumah', 'Lainnya'];
 
+  // Reactive Auto Filtering
   useEffect(() => {
-    fetchTodos();
-    fetchSummary();
-  }, [fetchTodos, fetchSummary]);
-
-  const handleFilterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     fetchTodos({
       status: filterStatus === 'all' ? undefined : filterStatus,
       priority: filterPriority === 'all' ? undefined : filterPriority,
       category: filterCategory === 'all' ? undefined : filterCategory,
     });
-  };
+  }, [filterStatus, filterPriority, filterCategory, fetchTodos]);
+
+  useEffect(() => {
+    fetchSummary();
+  }, [fetchSummary, todos]); // refetch summary when todos changes
 
   const handleClearFilters = () => {
     setFilterStatus('all');
     setFilterPriority('all');
     setFilterCategory('all');
-    fetchTodos();
   };
 
   const handleOpenAdd = () => {
@@ -330,92 +328,99 @@ export default function TodosPage() {
       </div>
 
       {/* Main Grid Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        {/* Filters Panel */}
-        <Card className="shadow-sm lg:col-span-1">
-          <CardHeader className="flex flex-row items-center gap-2 border-b border-border pb-2.5">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-xs font-semibold">Filter</CardTitle>
+      <div className="w-full">
+        {/* Tasks List */}
+        <Card className="shadow-sm w-full">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border pb-3 gap-3">
+            <div>
+              <CardTitle className="text-sm font-semibold">Daftar Kegiatan</CardTitle>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Kelola dan pantau seluruh tugas kuliah Anda.</p>
+            </div>
+            
+            <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full w-fit">
+              {todos.length} Tugas
+            </span>
           </CardHeader>
-          <CardContent className="pt-4">
-            <form onSubmit={handleFilterSubmit} className="space-y-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Status</label>
-                <Select value={filterStatus} onValueChange={(val) => setFilterStatus(val || 'all')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Pilih Status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
-                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Status</SelectItem>
-                    <SelectItem value="pending" className="rounded hover:bg-accent cursor-pointer">Belum Dikerjakan</SelectItem>
-                    <SelectItem value="in_progress" className="rounded hover:bg-accent cursor-pointer">Sedang Dikerjakan</SelectItem>
-                    <SelectItem value="completed" className="rounded hover:bg-accent cursor-pointer">Selesai</SelectItem>
-                  </SelectContent>
-                </Select>
+          
+          <CardContent className="pt-4 space-y-4">
+            {/* Horizontal Filter Toolbar */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-border/40">
+              {/* Segmented Controls for Status */}
+              <div className="bg-[#f4f4f5] dark:bg-zinc-900/60 p-0.5 rounded-lg flex items-center gap-0.5 text-[11px] font-semibold text-muted-foreground w-fit shrink-0">
+                {[
+                  { id: 'all', label: 'Semua', count: summary?.total || 0 },
+                  { id: 'pending', label: 'Belum', count: summary?.pending || 0 },
+                  { id: 'in_progress', label: 'Sedang', count: summary?.inProgress || 0 },
+                  { id: 'completed', label: 'Selesai', count: summary?.completed || 0 },
+                ].map((tab) => {
+                  const isActive = filterStatus === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setFilterStatus(tab.id)}
+                      className={`px-3 py-1.5 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-white dark:bg-zinc-800 text-foreground shadow-xs font-bold'
+                          : 'hover:text-foreground hover:bg-zinc-200/40 dark:hover:bg-zinc-800/20'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full transition-colors duration-200 ${
+                        isActive 
+                          ? 'bg-zinc-100 dark:bg-zinc-900 text-foreground' 
+                          : 'bg-zinc-200/50 dark:bg-zinc-800/60 text-muted-foreground/80'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Prioritas</label>
+              {/* Priority and Category Dropdowns Inline */}
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                {/* Priority Selector */}
                 <Select value={filterPriority} onValueChange={(val) => setFilterPriority(val || 'all')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Pilih Prioritas" />
+                  <SelectTrigger className="h-8 text-[11px] min-w-[120px] bg-background border border-border rounded-md px-2.5 py-1">
+                    <SelectValue placeholder="Prioritas" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
-                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Prioritas</SelectItem>
-                    <SelectItem value="high" className="rounded hover:bg-accent cursor-pointer">Tinggi (High)</SelectItem>
-                    <SelectItem value="medium" className="rounded hover:bg-accent cursor-pointer">Sedang (Medium)</SelectItem>
-                    <SelectItem value="low" className="rounded hover:bg-accent cursor-pointer">Rendah (Low)</SelectItem>
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Prioritas</SelectItem>
+                    <SelectItem value="high" className="rounded hover:bg-accent cursor-pointer text-xs">Tinggi (High)</SelectItem>
+                    <SelectItem value="medium" className="rounded hover:bg-accent cursor-pointer text-xs">Sedang (Medium)</SelectItem>
+                    <SelectItem value="low" className="rounded hover:bg-accent cursor-pointer text-xs">Rendah (Low)</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Kategori</label>
+                {/* Category Selector */}
                 <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val || 'all')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Pilih Kategori" />
+                  <SelectTrigger className="h-8 text-[11px] min-w-[120px] bg-background border border-border rounded-md px-2.5 py-1">
+                    <SelectValue placeholder="Kategori" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
-                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Kategori</SelectItem>
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Kategori</SelectItem>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer text-xs">{cat}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="pt-2 space-y-2">
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  className="w-full text-xs cursor-pointer py-1"
-                >
-                  Terapkan Filter
-                </Button>
-                {(filterStatus !== 'all' || filterPriority !== 'all' || filterCategory !== 'all') && (
+                {/* Reset button inline if filter is active */}
+                {(filterPriority !== 'all' || filterCategory !== 'all' || filterStatus !== 'all') && (
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleClearFilters}
-                    className="w-full text-xs cursor-pointer py-1"
+                    className="h-8 text-[11px] px-2.5 cursor-pointer hover:bg-muted border border-dashed border-border"
                   >
-                    Reset Filter
+                    Reset
                   </Button>
                 )}
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
 
-        {/* Tasks List */}
-        <Card className="shadow-sm lg:col-span-3">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-2.5">
-            <CardTitle className="text-sm font-semibold">Daftar Kegiatan</CardTitle>
-            <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
-              {todos.length} Tugas
-            </span>
-          </CardHeader>
-          <CardContent className="pt-4">
+            <div className="pt-2">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
@@ -498,6 +503,7 @@ export default function TodosPage() {
                 ))}
               </div>
             )}
+            </div>
           </CardContent>
         </Card>
       </div>
