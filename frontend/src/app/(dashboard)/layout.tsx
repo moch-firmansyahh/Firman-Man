@@ -39,7 +39,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const getPageTitle = () => {
     const item = navItems.find((i) => i.href === pathname);
-    return item ? item.name : 'FirmanMan';
+    return item ? item.name : 'FM';
+  };
+
+  // Get up to 3 upcoming tasks to show in the sidebar
+  const upcomingTasks = todoSummary?.approachingDeadline?.slice(0, 3) || [];
+
+  const getCategoryColor = (cat: string) => {
+    switch (cat) {
+      case 'Tugas Besar':
+        return 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400';
+      case 'Personal Project':
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400';
+      case 'Kuliah':
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400';
+      default:
+        return 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400';
+    }
   };
 
   return (
@@ -53,12 +69,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex flex-col min-w-0">
           {/* Sidebar Top: Logo & Toggle Button */}
           {!sidebarCollapsed ? (
-            <div className="h-12 flex items-center justify-between px-3.5 border-b border-border/40 transition-all duration-300">
+            <div className="h-16 flex items-center justify-between px-3.5 border-b border-border/40 transition-all duration-300">
               <div className="flex items-center min-w-0">
-                <div className="h-8 w-8 rounded-full bg-white dark:bg-zinc-900 border border-border shadow-sm flex items-center justify-center font-bold text-xs text-[#f97316] shrink-0">
+                {/* Cyan/blue gradient logo matching Closure.ai style */}
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-black text-white text-xs shrink-0 shadow-sm">
                   FM
                 </div>
-                <span className={`font-semibold text-xs tracking-tight text-foreground transition-all duration-300 overflow-hidden whitespace-nowrap ml-2`}>
+                <span className="font-bold text-xs tracking-tight text-foreground transition-all duration-300 overflow-hidden whitespace-nowrap ml-2">
                   FirmanMan
                 </span>
               </div>
@@ -71,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
             </div>
           ) : (
-            <div className="h-12 flex items-center justify-center border-b border-border/40 transition-all duration-300">
+            <div className="h-16 flex items-center justify-center border-b border-border/40 transition-all duration-300">
               <button 
                 onClick={() => setSidebarCollapsed(false)} 
                 className="p-1 hover:bg-accent hover:text-accent-foreground rounded-md text-muted-foreground cursor-pointer transition-all duration-200 shrink-0"
@@ -82,13 +99,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           )}
 
-          {/* Navigation Links */}
-          <nav className="space-y-1 px-2.5 py-3">
+          {/* Navigation Links with top margin gap */}
+          <nav className="space-y-1 px-2.5 mt-5">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               
-              // Dynamic task count badge based on DB state
               let badge = null;
               if (item.name === 'Tugas' && todoSummary?.pending) {
                 badge = todoSummary.pending;
@@ -101,14 +117,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   title={sidebarCollapsed ? item.name : undefined}
                   className={`flex items-center justify-between h-9 px-2.5 rounded-md text-xs font-semibold transition-all duration-200 ${
                     isActive
-                      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm text-foreground'
+                      ? 'bg-zinc-200/50 dark:bg-zinc-800/60 text-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                   }`}
                 >
                   <div className="flex items-center min-w-0">
                     <div className="w-5 flex items-center justify-center shrink-0">
                       <Icon className={`h-4 w-4 transition-colors duration-200 ${
-                        isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
+                        isActive ? 'text-foreground' : 'text-muted-foreground'
                       }`} />
                     </div>
                     <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
@@ -127,6 +143,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               );
             })}
           </nav>
+
+          {/* "Tugas Terdekat" (Closure.ai Recent Cases style section) */}
+          {!sidebarCollapsed && upcomingTasks.length > 0 && (
+            <div className="mt-8 px-3.5 space-y-2.5 transition-all duration-300">
+              <p className="text-[9px] font-bold text-muted-foreground/80 uppercase tracking-wider">
+                Tugas Terdekat
+              </p>
+              <div className="space-y-2">
+                {upcomingTasks.map((task) => (
+                  <Link
+                    key={task.id}
+                    href="/todos"
+                    className="flex items-center gap-2 group min-w-0"
+                  >
+                    <div className={`h-5.5 w-5.5 rounded-full flex items-center justify-center font-bold text-[9px] shrink-0 border border-current/15 ${getCategoryColor(task.category)}`}>
+                      {task.category.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground group-hover:text-foreground truncate font-medium">
+                      {task.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sidebar Bottom: User & Logout */}
