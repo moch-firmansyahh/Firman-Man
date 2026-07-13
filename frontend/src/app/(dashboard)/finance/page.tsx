@@ -2,7 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import { useFinanceStore, Transaction } from '@/store/finance-store';
-import { Wallet, Plus, Trash2, Edit2, ArrowDownRight, ArrowUpRight, X, Filter } from 'lucide-react';
+import { Wallet, Plus, Trash2, Edit2, ArrowDownRight, ArrowUpRight, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function FinancePage() {
   const {
@@ -27,7 +45,7 @@ export default function FinancePage() {
   const [date, setDate] = useState('');
 
   // Filters
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -42,14 +60,14 @@ export default function FinancePage() {
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchTransactions({
-      category: filterCategory || undefined,
+      category: filterCategory === 'all' ? undefined : filterCategory,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
     });
   };
 
   const handleClearFilters = () => {
-    setFilterCategory('');
+    setFilterCategory('all');
     setStartDate('');
     setEndDate('');
     fetchTransactions();
@@ -120,302 +138,313 @@ export default function FinancePage() {
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">Manajemen Keuangan</h2>
-          <p className="text-xs text-zinc-500">Catat pemasukan dan pengeluaran harian Anda.</p>
+          <h2 className="text-xl font-semibold text-foreground tracking-tight">Manajemen Keuangan</h2>
+          <p className="text-xs text-muted-foreground">Catat pemasukan dan pengeluaran harian Anda.</p>
         </div>
-        <button
+        <Button
           onClick={handleOpenAdd}
-          className="shadcn-btn-primary py-2 px-4 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+          size="sm"
+          className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Tambah Transaksi
-        </button>
+        </Button>
       </div>
 
       {/* Summary Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Balance Card */}
-        <div className="shadcn-card p-5 bg-white shadow-sm space-y-1">
-          <div className="text-xs text-zinc-500 font-medium">Saldo Dompet</div>
-          <div className={`text-xl font-bold ${summary ? (summary.balance >= 0 ? 'text-emerald-600' : 'text-rose-600') : 'text-zinc-900'}`}>
-            {summary ? formatRupiah(summary.balance) : 'Rp 0'}
-          </div>
-          <p className="text-[10px] text-zinc-400">{summary?.transactionsCount || 0} Total Transaksi</p>
-        </div>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-xs font-medium text-muted-foreground">Saldo Dompet</span>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-xl font-bold ${summary ? (summary.balance >= 0 ? 'text-emerald-600 dark:text-emerald-455' : 'text-rose-600 dark:text-rose-455') : 'text-foreground'}`}>
+              {summary ? formatRupiah(summary.balance) : 'Rp 0'}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">{summary?.transactionsCount || 0} Total Transaksi</p>
+          </CardContent>
+        </Card>
 
         {/* Income Card */}
-        <div className="shadcn-card p-5 bg-white shadow-sm space-y-1">
-          <div className="text-xs text-zinc-500 font-medium flex items-center justify-between">
-            <span>Total Pemasukan</span>
-            <ArrowUpRight className="h-3.5 w-3.5 text-emerald-500" />
-          </div>
-          <div className="text-xl font-bold text-emerald-600">
-            {summary ? formatRupiah(summary.totalIncome) : 'Rp 0'}
-          </div>
-          <p className="text-[10px] text-zinc-400">Aliran dana masuk</p>
-        </div>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-xs font-medium text-muted-foreground">Total Pemasukan</span>
+            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              {summary ? formatRupiah(summary.totalIncome) : 'Rp 0'}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Aliran dana masuk</p>
+          </CardContent>
+        </Card>
 
         {/* Expense Card */}
-        <div className="shadcn-card p-5 bg-white shadow-sm space-y-1">
-          <div className="text-xs text-zinc-500 font-medium flex items-center justify-between">
-            <span>Total Pengeluaran</span>
-            <ArrowDownRight className="h-3.5 w-3.5 text-rose-500" />
-          </div>
-          <div className="text-xl font-bold text-rose-600">
-            {summary ? formatRupiah(summary.totalExpense) : 'Rp 0'}
-          </div>
-          <p className="text-[10px] text-zinc-400">Aliran dana keluar</p>
-        </div>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <span className="text-xs font-medium text-muted-foreground">Total Pengeluaran</span>
+            <ArrowDownRight className="h-4 w-4 text-rose-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl font-bold text-rose-600 dark:text-rose-400">
+              {summary ? formatRupiah(summary.totalExpense) : 'Rp 0'}
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Aliran dana keluar</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Filters Panel */}
-        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-1">
-          <div className="flex items-center gap-2 text-zinc-900 font-semibold text-xs border-b border-zinc-200 pb-2.5">
-            <Filter className="h-4 w-4 text-zinc-500" />
-            Filter
-          </div>
-
-          <form onSubmit={handleFilterSubmit} className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-700">Kategori</label>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-              >
-                <option value="">Semua Kategori</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-700">Tanggal Mulai</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-700">Tanggal Selesai</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-              />
-            </div>
-
-            <div className="pt-2 space-y-2">
-              <button
-                type="submit"
-                className="shadcn-btn-secondary w-full py-1.5 text-xs cursor-pointer"
-              >
-                Terapkan Filter
-              </button>
-              {(filterCategory || startDate || endDate) && (
-                <button
-                  type="button"
-                  onClick={handleClearFilters}
-                  className="shadcn-btn-outline w-full py-1.5 text-xs cursor-pointer"
-                >
-                  Reset Filter
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* Transactions List */}
-        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-3">
-          <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
-            <h3 className="text-sm font-semibold text-zinc-900">Riwayat Transaksi</h3>
-            <span className="text-[10px] text-zinc-500 bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded-full">
-              {transactions.length} Item
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent"></div>
-              <p className="mt-3 text-[10px] text-zinc-500">Memuat data...</p>
-            </div>
-          ) : transactions.length === 0 ? (
-            <div className="text-center py-12 text-zinc-400 text-xs">
-              Belum ada transaksi tercatat.
-            </div>
-          ) : (
-            <div className="divide-y divide-zinc-100 space-y-1.5">
-              {transactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between py-2.5 hover:bg-zinc-50 px-2 rounded-md transition-all group">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 border ${
-                      tx.type === 'income'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                        : 'bg-rose-50 border-rose-200 text-rose-600'
-                    }`}>
-                      {tx.type === 'income' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-xs text-zinc-800 truncate">{tx.category}</span>
-                        <span className="text-[9px] text-zinc-400">
-                          {new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-zinc-500 truncate mt-0.5 max-w-[200px] md:max-w-[400px]">
-                        {tx.note || '-'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <span className={`font-bold text-xs shrink-0 ${tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {tx.type === 'income' ? '+' : '-'} {formatRupiah(tx.amount)}
-                    </span>
-
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => handleOpenEdit(tx)}
-                        className="p-1 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-800 rounded transition-all"
-                        title="Edit"
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(tx.id)}
-                        className="p-1 hover:bg-rose-50 text-zinc-400 hover:text-rose-600 rounded transition-all"
-                        title="Hapus"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Popup Form Modal */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setIsFormOpen(false)} />
-
-          <div className="relative w-full max-w-md shadcn-card bg-white p-5 shadow-lg animate-scale-up space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-              <h3 className="text-sm font-semibold text-zinc-900">
-                {editingTx ? 'Ubah Transaksi' : 'Tambah Transaksi'}
-              </h3>
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="p-1 text-zinc-400 hover:text-zinc-650"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-2 bg-zinc-50 p-1 rounded-md border border-zinc-200">
-                <button
-                  type="button"
-                  onClick={() => setType('expense')}
-                  className={`py-1.5 rounded text-xs font-semibold transition-all ${
-                    type === 'expense'
-                      ? 'bg-white text-zinc-900 border border-zinc-200 shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-850'
-                  }`}
-                >
-                  Pengeluaran
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setType('income')}
-                  className={`py-1.5 rounded text-xs font-semibold transition-all ${
-                    type === 'income'
-                      ? 'bg-white text-zinc-900 border border-zinc-200 shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-850'
-                  }`}
-                >
-                  Pemasukan
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-zinc-700">Jumlah Transaksi (Rp)</label>
-                <input
-                  type="number"
-                  required
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="shadcn-input block w-full px-3 py-2 text-sm bg-white border-zinc-200"
-                  placeholder="50000"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-700">Kategori</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-                  >
+        <Card className="shadow-sm lg:col-span-1">
+          <CardHeader className="flex flex-row items-center gap-2 border-b border-border pb-2.5">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-semibold">Filter</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <form onSubmit={handleFilterSubmit} className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Kategori</label>
+                <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val || 'all')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Pilih Kategori" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Kategori</SelectItem>
                     {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
+                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
                     ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-700">Tanggal</label>
-                  <input
-                    type="date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-                  />
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-zinc-700">Catatan</label>
-                <textarea
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={2}
-                  className="shadcn-input block w-full px-3 py-2 text-sm bg-white border-zinc-200 resize-none"
-                  placeholder="Deskripsi singkat..."
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Tanggal Mulai</label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full text-xs bg-background"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="shadcn-btn-secondary py-2 px-3 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Tanggal Selesai</label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full text-xs bg-background"
+                />
+              </div>
+
+              <div className="pt-2 space-y-2">
+                <Button
                   type="submit"
-                  className="shadcn-btn-primary py-2 px-4 cursor-pointer"
+                  variant="secondary"
+                  className="w-full text-xs cursor-pointer py-1"
                 >
-                  {editingTx ? 'Perbarui' : 'Simpan'}
-                </button>
+                  Terapkan Filter
+                </Button>
+                {(filterCategory !== 'all' || startDate || endDate) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearFilters}
+                    className="w-full text-xs cursor-pointer py-1"
+                  >
+                    Reset Filter
+                  </Button>
+                )}
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </CardContent>
+        </Card>
+
+        {/* Transactions List */}
+        <Card className="shadow-sm lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-2.5">
+            <CardTitle className="text-sm font-semibold">Riwayat Transaksi</CardTitle>
+            <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
+              {transactions.length} Item
+            </span>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                <p className="mt-3 text-[10px] text-muted-foreground">Memuat data...</p>
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground text-xs">
+                Belum ada transaksi tercatat.
+              </div>
+            ) : (
+              <div className="divide-y divide-border space-y-1.5">
+                {transactions.map((tx) => (
+                  <div key={tx.id} className="flex items-center justify-between py-2.5 hover:bg-muted/30 px-2 rounded-md transition-all group">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`h-8 w-8 rounded-md flex items-center justify-center shrink-0 border ${
+                        tx.type === 'income'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-rose-50 dark:bg-rose-955/20 border-rose-200 dark:border-rose-900/60 text-rose-600 dark:text-rose-455'
+                      }`}>
+                        {tx.type === 'income' ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-xs text-foreground truncate">{tx.category}</span>
+                          <span className="text-[9px] text-muted-foreground">
+                            {new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate mt-0.5 max-w-[200px] md:max-w-[400px]">
+                          {tx.note || '-'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <span className={`font-bold text-xs shrink-0 ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                        {tx.type === 'income' ? '+' : '-'} {formatRupiah(tx.amount)}
+                      </span>
+
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          onClick={() => handleOpenEdit(tx)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                          title="Edit"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(tx.id)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                          title="Hapus"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Dialog Form Modal */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
+          <DialogHeader className="border-b border-border pb-2">
+            <DialogTitle className="text-sm font-semibold">
+              {editingTx ? 'Ubah Transaksi' : 'Tambah Transaksi'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-md border border-border">
+              <button
+                type="button"
+                onClick={() => setType('expense')}
+                className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+                  type === 'expense'
+                    ? 'bg-card text-foreground border border-border shadow-sm font-bold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Pengeluaran
+              </button>
+              <button
+                type="button"
+                onClick={() => setType('income')}
+                className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+                  type === 'income'
+                    ? 'bg-card text-foreground border border-border shadow-sm font-bold'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Pemasukan
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Jumlah Transaksi (Rp)</label>
+              <Input
+                type="number"
+                required
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="bg-background border-input text-sm"
+                placeholder="50000"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Kategori</label>
+                <Select value={category} onValueChange={(val) => setCategory(val || 'Makan')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Pilih Kategori" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Tanggal</label>
+                <Input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="bg-background border-input text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Catatan</label>
+              <Textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={2}
+                className="bg-background border-input text-sm resize-none"
+                placeholder="Deskripsi singkat..."
+              />
+            </div>
+
+            <DialogFooter className="pt-2 gap-2 sm:gap-0 border-t border-border mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsFormOpen(false)}
+                className="cursor-pointer text-xs"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                className="cursor-pointer text-xs"
+              >
+                {editingTx ? 'Perbarui' : 'Simpan'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

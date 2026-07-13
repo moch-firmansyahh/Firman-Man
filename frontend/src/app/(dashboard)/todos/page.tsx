@@ -2,7 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { useTodoStore, Todo } from '@/store/todo-store';
-import { Plus, Trash2, Edit2, Calendar, Tag, X, CheckCircle2, Circle, Clock, Filter } from 'lucide-react';
+import { Plus, Trash2, Edit2, Calendar, Tag, CheckCircle2, Circle, Clock, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function TodosPage() {
   const {
@@ -28,9 +45,9 @@ export default function TodosPage() {
   const [deadline, setDeadline] = useState('');
 
   // Filters
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterPriority, setFilterPriority] = useState('');
-  const [filterCategory, setFilterCategory] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
 
   const categories = ['Kuliah', 'Tugas Besar', 'Personal Project', 'Pekerjaan Rumah', 'Lainnya'];
 
@@ -42,16 +59,16 @@ export default function TodosPage() {
   const handleFilterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchTodos({
-      status: filterStatus || undefined,
-      priority: filterPriority || undefined,
-      category: filterCategory || undefined,
+      status: filterStatus === 'all' ? undefined : filterStatus,
+      priority: filterPriority === 'all' ? undefined : filterPriority,
+      category: filterCategory === 'all' ? undefined : filterCategory,
     });
   };
 
   const handleClearFilters = () => {
-    setFilterStatus('');
-    setFilterPriority('');
-    setFilterCategory('');
+    setFilterStatus('all');
+    setFilterPriority('all');
+    setFilterCategory('all');
     fetchTodos();
   };
 
@@ -123,20 +140,20 @@ export default function TodosPage() {
 
   const getPriorityStyle = (prio: Todo['priority']) => {
     switch (prio) {
-      case 'high': return 'bg-rose-50 text-rose-700 border-rose-200';
-      case 'medium': return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'low': return 'bg-zinc-100 text-zinc-650 border-zinc-200';
+      case 'high': return 'bg-rose-50 dark:bg-rose-955/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/60';
+      case 'medium': return 'bg-amber-50 dark:bg-amber-955/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/60';
+      case 'low': return 'bg-zinc-100 dark:bg-zinc-900 text-zinc-650 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800';
     }
   };
 
   const getStatusIcon = (status: Todo['status']) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 cursor-pointer" />;
+        return <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500 cursor-pointer shrink-0" />;
       case 'in_progress':
-        return <Clock className="h-4.5 w-4.5 text-amber-500 cursor-pointer" />;
+        return <Clock className="h-4.5 w-4.5 text-amber-500 cursor-pointer shrink-0" />;
       default:
-        return <Circle className="h-4.5 w-4.5 text-zinc-300 cursor-pointer" />;
+        return <Circle className="h-4.5 w-4.5 text-zinc-300 dark:text-zinc-700 cursor-pointer shrink-0" />;
     }
   };
 
@@ -145,303 +162,317 @@ export default function TodosPage() {
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-900 tracking-tight">Daftar Tugas (To-Do List)</h2>
-          <p className="text-xs text-zinc-500">Atur prioritas tugas kuliah dan personal project Anda.</p>
+          <h2 className="text-xl font-semibold text-foreground tracking-tight">Daftar Tugas (To-Do List)</h2>
+          <p className="text-xs text-muted-foreground">Atur prioritas tugas kuliah dan personal project Anda.</p>
         </div>
-        <button
+        <Button
           onClick={handleOpenAdd}
-          className="shadcn-btn-primary py-2 px-4 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+          size="sm"
+          className="text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           Tambah Tugas
-        </button>
+        </Button>
       </div>
 
       {/* Task Summary Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="shadcn-card p-4 bg-white space-y-1">
-          <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Total Tugas</p>
-          <p className="text-lg font-bold text-zinc-900">{summary?.total || 0}</p>
-        </div>
-        <div className="shadcn-card p-4 bg-white space-y-1">
-          <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Belum Dikerjakan</p>
-          <p className="text-lg font-bold text-zinc-400">{summary?.pending || 0}</p>
-        </div>
-        <div className="shadcn-card p-4 bg-white space-y-1">
-          <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Sedang Dikerjakan</p>
-          <p className="text-lg font-bold text-amber-600">{summary?.inProgress || 0}</p>
-        </div>
-        <div className="shadcn-card p-4 bg-white space-y-1">
-          <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">Selesai</p>
-          <p className="text-lg font-bold text-emerald-600">{summary?.completed || 0}</p>
-        </div>
+        <Card className="shadow-sm">
+          <CardHeader className="p-4 space-y-1">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Total Tugas</p>
+            <p className="text-lg font-bold">{summary?.total || 0}</p>
+          </CardHeader>
+        </Card>
+        <Card className="shadow-sm">
+          <CardHeader className="p-4 space-y-1">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Belum Dikerjakan</p>
+            <p className="text-lg font-bold text-zinc-500">{summary?.pending || 0}</p>
+          </CardHeader>
+        </Card>
+        <Card className="shadow-sm">
+          <CardHeader className="p-4 space-y-1">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Sedang Dikerjakan</p>
+            <p className="text-lg font-bold text-amber-500">{summary?.inProgress || 0}</p>
+          </CardHeader>
+        </Card>
+        <Card className="shadow-sm">
+          <CardHeader className="p-4 space-y-1">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Selesai</p>
+            <p className="text-lg font-bold text-emerald-500">{summary?.completed || 0}</p>
+          </CardHeader>
+        </Card>
       </div>
 
       {/* Main Grid Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
         {/* Filters Panel */}
-        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-1">
-          <div className="flex items-center gap-2 text-zinc-900 font-semibold text-xs border-b border-zinc-200 pb-2.5">
-            <Filter className="h-4 w-4 text-zinc-500" />
-            Filter
-          </div>
+        <Card className="shadow-sm lg:col-span-1">
+          <CardHeader className="flex flex-row items-center gap-2 border-b border-border pb-2.5">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs font-semibold">Filter</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <form onSubmit={handleFilterSubmit} className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Status</label>
+                <Select value={filterStatus} onValueChange={(val) => setFilterStatus(val || 'all')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Pilih Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Status</SelectItem>
+                    <SelectItem value="pending" className="rounded hover:bg-accent cursor-pointer">Belum Dikerjakan</SelectItem>
+                    <SelectItem value="in_progress" className="rounded hover:bg-accent cursor-pointer">Sedang Dikerjakan</SelectItem>
+                    <SelectItem value="completed" className="rounded hover:bg-accent cursor-pointer">Selesai</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <form onSubmit={handleFilterSubmit} className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-700">Status</label>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-              >
-                <option value="">Semua Status</option>
-                <option value="pending">Belum Dikerjakan</option>
-                <option value="in_progress">Sedang Dikerjakan</option>
-                <option value="completed">Selesai</option>
-              </select>
-            </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Prioritas</label>
+                <Select value={filterPriority} onValueChange={(val) => setFilterPriority(val || 'all')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Pilih Prioritas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Prioritas</SelectItem>
+                    <SelectItem value="high" className="rounded hover:bg-accent cursor-pointer">Tinggi (High)</SelectItem>
+                    <SelectItem value="medium" className="rounded hover:bg-accent cursor-pointer">Sedang (Medium)</SelectItem>
+                    <SelectItem value="low" className="rounded hover:bg-accent cursor-pointer">Rendah (Low)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-700">Prioritas</label>
-              <select
-                value={filterPriority}
-                onChange={(e) => setFilterPriority(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-              >
-                <option value="">Semua Prioritas</option>
-                <option value="high">Tinggi (High)</option>
-                <option value="medium">Sedang (Medium)</option>
-                <option value="low">Rendah (Low)</option>
-              </select>
-            </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Kategori</label>
+                <Select value={filterCategory} onValueChange={(val) => setFilterCategory(val || 'all')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Pilih Kategori" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer">Semua Kategori</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-700">Kategori</label>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-              >
-                <option value="">Semua Kategori</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="pt-2 space-y-2">
-              <button
-                type="submit"
-                className="shadcn-btn-secondary w-full py-1.5 text-xs cursor-pointer"
-              >
-                Terapkan Filter
-              </button>
-              {(filterStatus || filterPriority || filterCategory) && (
-                <button
-                  type="button"
-                  onClick={handleClearFilters}
-                  className="shadcn-btn-outline w-full py-1.5 text-xs cursor-pointer"
+              <div className="pt-2 space-y-2">
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  className="w-full text-xs cursor-pointer py-1"
                 >
-                  Reset Filter
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
+                  Terapkan Filter
+                </Button>
+                {(filterStatus !== 'all' || filterPriority !== 'all' || filterCategory !== 'all') && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearFilters}
+                    className="w-full text-xs cursor-pointer py-1"
+                  >
+                    Reset Filter
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
 
         {/* Tasks List */}
-        <div className="shadcn-card p-5 bg-white space-y-4 lg:col-span-3">
-          <div className="flex items-center justify-between border-b border-zinc-200 pb-2.5">
-            <h3 className="text-sm font-semibold text-zinc-900">Daftar Kegiatan</h3>
-            <span className="text-[10px] text-zinc-500 bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded-full">
+        <Card className="shadow-sm lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-2.5">
+            <CardTitle className="text-sm font-semibold">Daftar Kegiatan</CardTitle>
+            <span className="text-[10px] text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-full">
               {todos.length} Tugas
             </span>
-          </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                <p className="mt-3 text-[10px] text-muted-foreground">Memuat data...</p>
+              </div>
+            ) : todos.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground text-xs">
+                Belum ada tugas tercatat.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {todos.map((todo) => (
+                  <div
+                    key={todo.id}
+                    className={`flex items-center justify-between p-3.5 rounded-md border border-border bg-muted/20 hover:bg-muted/40 transition-all group ${
+                      todo.status === 'completed' ? 'opacity-60' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <button
+                        onClick={() => toggleStatus(todo)}
+                        className="shrink-0 focus:outline-none"
+                      >
+                        {getStatusIcon(todo.status)}
+                      </button>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent"></div>
-              <p className="mt-3 text-[10px] text-zinc-500">Memuat data...</p>
-            </div>
-          ) : todos.length === 0 ? (
-            <div className="text-center py-12 text-zinc-400 text-xs">
-              Belum ada tugas tercatat.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {todos.map((todo) => (
-                <div
-                  key={todo.id}
-                  className={`flex items-center justify-between p-3.5 rounded-md border border-zinc-200 bg-zinc-50/50 hover:bg-zinc-50 transition-all group ${
-                    todo.status === 'completed' ? 'opacity-60' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <button
-                      onClick={() => toggleStatus(todo)}
-                      className="shrink-0 focus:outline-none"
-                    >
-                      {getStatusIcon(todo.status)}
-                    </button>
-
-                    <div className="min-w-0 space-y-1">
-                      <p className={`font-medium text-xs text-zinc-800 truncate ${
-                        todo.status === 'completed' ? 'line-through text-zinc-400' : ''
-                      }`}>
-                        {todo.title}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2.5 items-center text-[9px] text-zinc-500">
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide border ${getPriorityStyle(todo.priority)}`}>
-                          {todo.priority}
-                        </span>
+                      <div className="min-w-0 space-y-1">
+                        <p className={`font-medium text-xs text-foreground truncate ${
+                          todo.status === 'completed' ? 'line-through text-muted-foreground' : ''
+                        }`}>
+                          {todo.title}
+                        </p>
                         
-                        <span className="flex items-center gap-1">
-                          <Tag className="h-3 w-3 text-zinc-400" />
-                          {todo.category}
-                        </span>
-
-                        {todo.deadline && (
-                          <span className={`flex items-center gap-1 ${
-                            todo.status !== 'completed' && new Date(todo.deadline) < new Date()
-                              ? 'text-rose-600 font-bold'
-                              : 'text-zinc-400'
-                          }`}>
-                            <Calendar className="h-3 w-3 text-zinc-400" />
-                            {new Date(todo.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                            {todo.status !== 'completed' && new Date(todo.deadline) < new Date() && ' (Terlambat)'}
+                        <div className="flex flex-wrap gap-2.5 items-center text-[9px] text-muted-foreground">
+                          <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wide border ${getPriorityStyle(todo.priority)}`}>
+                            {todo.priority}
                           </span>
-                        )}
+                          
+                          <span className="flex items-center gap-1">
+                            <Tag className="h-3 w-3 text-muted-foreground" />
+                            {todo.category}
+                          </span>
+
+                          {todo.deadline && (
+                            <span className={`flex items-center gap-1 ${
+                              todo.status !== 'completed' && new Date(todo.deadline) < new Date()
+                                ? 'text-rose-600 dark:text-rose-455 font-bold'
+                                : 'text-muted-foreground'
+                            }`}>
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              {new Date(todo.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                              {todo.status !== 'completed' && new Date(todo.deadline) < new Date() && ' (Terlambat)'}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                    <button
-                      onClick={() => handleOpenEdit(todo)}
-                      className="p-1 hover:bg-zinc-150 text-zinc-500 hover:text-zinc-800 rounded transition-all"
-                      title="Ubah"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(todo.id)}
-                      className="p-1 hover:bg-rose-50 text-zinc-400 hover:text-rose-600 rounded transition-all"
-                      title="Hapus"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <Button
+                        onClick={() => handleOpenEdit(todo)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Ubah"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(todo.id)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive cursor-pointer"
+                        title="Hapus"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Popup Form Modal */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setIsFormOpen(false)} />
+      {/* Dialog Form Modal */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
+          <DialogHeader className="border-b border-border pb-2">
+            <DialogTitle className="text-sm font-semibold">
+              {editingTodo ? 'Ubah Tugas' : 'Tambah Tugas'}
+            </DialogTitle>
+          </DialogHeader>
 
-          <div className="relative w-full max-w-md shadcn-card bg-white p-5 shadow-lg animate-scale-up space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-              <h3 className="text-sm font-semibold text-zinc-900">
-                {editingTodo ? 'Ubah Tugas' : 'Tambah Tugas'}
-              </h3>
-              <button
-                onClick={() => setIsFormOpen(false)}
-                className="p-1 text-zinc-400 hover:text-zinc-650"
-              >
-                <X className="h-4 w-4" />
-              </button>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Judul Kegiatan</label>
+              <Input
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="bg-background border-input text-sm"
+                placeholder="Misalnya: Ngerjakan PR Alpro"
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-zinc-700">Judul Kegiatan</label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="shadcn-input block w-full px-3 py-2 text-sm bg-white border-zinc-200"
-                  placeholder="Misalnya: Ngerjakan PR Alpro"
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Prioritas</label>
+                <Select value={priority} onValueChange={(val) => setPriority((val as Todo['priority']) || 'medium')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Prioritas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
+                    <SelectItem value="low" className="rounded hover:bg-accent cursor-pointer">Rendah (Low)</SelectItem>
+                    <SelectItem value="medium" className="rounded hover:bg-accent cursor-pointer">Sedang (Medium)</SelectItem>
+                    <SelectItem value="high" className="rounded hover:bg-accent cursor-pointer">Tinggi (High)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Kategori</label>
+                <Select value={category} onValueChange={(val) => setCategory(val || 'Kuliah')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Pilih Kategori" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Deadline (Opsional)</label>
+                <Input
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="bg-background border-input text-xs"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-700">Prioritas</label>
-                  <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value as Todo['priority'])}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-                  >
-                    <option value="low">Rendah (Low)</option>
-                    <option value="medium">Sedang (Medium)</option>
-                    <option value="high">Tinggi (High)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-700">Kategori</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground">Status</label>
+                <Select value={status} onValueChange={(val) => setStatus((val as Todo['status']) || 'pending')}>
+                  <SelectTrigger className="w-full text-xs">
+                    <SelectValue placeholder="Status Pengerjaan" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
+                    <SelectItem value="pending" className="rounded hover:bg-accent cursor-pointer">Belum Dikerjakan</SelectItem>
+                    <SelectItem value="in_progress" className="rounded hover:bg-accent cursor-pointer">Sedang Dikerjakan</SelectItem>
+                    <SelectItem value="completed" className="rounded hover:bg-accent cursor-pointer">Selesai</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-700">Deadline (Opsional)</label>
-                  <input
-                    type="date"
-                    value={deadline}
-                    onChange={(e) => setDeadline(e.target.value)}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-zinc-700">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as Todo['status'])}
-                    className="shadcn-input block w-full px-3 py-2 text-xs bg-white border-zinc-200"
-                  >
-                    <option value="pending">Belum Dikerjakan</option>
-                    <option value="in_progress">Sedang Dikerjakan</option>
-                    <option value="completed">Selesai</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="shadcn-btn-secondary py-2 px-3 cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="shadcn-btn-primary py-2 px-4 cursor-pointer"
-                >
-                  {editingTodo ? 'Perbarui' : 'Simpan'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="pt-2 gap-2 sm:gap-0 border-t border-border mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsFormOpen(false)}
+                className="cursor-pointer text-xs"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                className="cursor-pointer text-xs"
+              >
+                {editingTodo ? 'Perbarui' : 'Simpan'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
