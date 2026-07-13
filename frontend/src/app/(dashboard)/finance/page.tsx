@@ -410,7 +410,7 @@ export default function FinancePage() {
                       onClick={() => setFilterType(tab.id)}
                       className={`px-3 py-1.5 rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
                         isActive
-                          ? 'bg-white dark:bg-zinc-850 text-foreground shadow-xs font-bold'
+                          ? 'bg-white dark:bg-zinc-800 text-foreground shadow-xs font-bold'
                           : 'hover:text-foreground hover:bg-zinc-200/40 dark:hover:bg-zinc-800/20'
                       }`}
                     >
