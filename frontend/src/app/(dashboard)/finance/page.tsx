@@ -203,6 +203,7 @@ export default function FinancePage() {
 
   // Filters
   const [filterCategory, setFilterCategory] = useState('all');
+  const [dateRangePreset, setDateRangePreset] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -221,8 +222,54 @@ export default function FinancePage() {
     fetchSummary();
   }, [fetchSummary, transactions]); // refetch summary when transactions changes
 
+  const handleRangeChange = (preset: string | null) => {
+    if (!preset) return;
+    setDateRangePreset(preset);
+    const now = new Date();
+    let start = '';
+    let end = '';
+    
+    switch (preset) {
+      case 'today': {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        start = d.toISOString().split('T')[0];
+        break;
+      }
+      case 'last_7_days': {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+        start = d.toISOString().split('T')[0];
+        break;
+      }
+      case 'last_30_days': {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+        start = d.toISOString().split('T')[0];
+        break;
+      }
+      case 'this_month': {
+        const d = new Date(now.getFullYear(), now.getMonth(), 1);
+        start = d.toISOString().split('T')[0];
+        break;
+      }
+      case 'last_month': {
+        const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+        start = firstOfLastMonth.toISOString().split('T')[0];
+        end = lastOfLastMonth.toISOString().split('T')[0];
+        break;
+      }
+      default:
+        start = '';
+        end = '';
+        break;
+    }
+    
+    setStartDate(start);
+    setEndDate(end);
+  };
+
   const handleClearFilters = () => {
     setFilterCategory('all');
+    setDateRangePreset('all');
     setStartDate('');
     setEndDate('');
   };
@@ -355,30 +402,23 @@ export default function FinancePage() {
                   </SelectContent>
                 </Select>
 
-                {/* Start Date Input */}
-                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2.5 h-8">
-                  <span className="text-[9px] font-bold text-muted-foreground uppercase">Mulai</span>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="bg-transparent text-[11px] border-none outline-none focus:ring-0 text-foreground w-[110px]"
-                  />
-                </div>
-
-                {/* End Date Input */}
-                <div className="flex items-center gap-1.5 bg-background border border-border rounded-md px-2.5 h-8">
-                  <span className="text-[9px] font-bold text-muted-foreground uppercase">Selesai</span>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-transparent text-[11px] border-none outline-none focus:ring-0 text-foreground w-[110px]"
-                  />
-                </div>
+                {/* Date Range Preset Selector */}
+                <Select value={dateRangePreset} onValueChange={handleRangeChange}>
+                  <SelectTrigger className="h-8 text-[11px] min-w-[140px] bg-background border border-border rounded-md px-2.5 py-1">
+                    <SelectValue placeholder="Rentang Waktu" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[140px]">
+                    <SelectItem value="all" className="rounded hover:bg-accent cursor-pointer text-xs">Semua Waktu</SelectItem>
+                    <SelectItem value="today" className="rounded hover:bg-accent cursor-pointer text-xs">Hari Ini</SelectItem>
+                    <SelectItem value="last_7_days" className="rounded hover:bg-accent cursor-pointer text-xs">7 Hari Terakhir</SelectItem>
+                    <SelectItem value="last_30_days" className="rounded hover:bg-accent cursor-pointer text-xs">30 Hari Terakhir</SelectItem>
+                    <SelectItem value="this_month" className="rounded hover:bg-accent cursor-pointer text-xs">Bulan Ini</SelectItem>
+                    <SelectItem value="last_month" className="rounded hover:bg-accent cursor-pointer text-xs">Bulan Lalu</SelectItem>
+                  </SelectContent>
+                </Select>
 
                 {/* Reset button inline if filter is active */}
-                {(filterCategory !== 'all' || startDate || endDate) && (
+                {(filterCategory !== 'all' || dateRangePreset !== 'all') && (
                   <Button
                     type="button"
                     variant="outline"
