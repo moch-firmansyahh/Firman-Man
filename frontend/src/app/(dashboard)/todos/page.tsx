@@ -426,7 +426,7 @@ export default function TodosPage() {
                 Belum ada tugas tercatat.
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
                 {todos.map((todo) => (
                   <div
                     key={todo.id}
