@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/store/auth-store';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Wallet, CheckSquare, LogOut, Menu, X, User } from 'lucide-react';
+import { LayoutDashboard, Wallet, CheckSquare, LogOut, Menu, X, User, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
@@ -20,6 +20,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Sidebar open/collapse state for Desktop
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -40,17 +43,47 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-background text-foreground transition-colors duration-200">
       {/* Sidebar for Desktop */}
-      <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border sticky top-0 h-screen p-5 justify-between z-30">
+      <aside 
+        className={`hidden md:flex flex-col bg-card border-r border-border sticky top-0 h-screen justify-between z-30 transition-all duration-300 ease-in-out ${
+          sidebarCollapsed ? 'w-16 px-2 py-5' : 'w-64 p-5'
+        }`}
+      >
         <div className="space-y-6">
-          <div className="flex items-center gap-2 px-2">
-            <div className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center font-bold text-xs shadow-sm">
-              FM
+          {/* Sidebar Top: Logo & Toggle Button */}
+          {!sidebarCollapsed ? (
+            <div className="flex items-center justify-between px-2 transition-all duration-300">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center font-bold text-xs shadow-sm">
+                  FM
+                </div>
+                <span className="font-semibold text-sm tracking-tight text-foreground">
+                  FirmanMan
+                </span>
+              </div>
+              <button 
+                onClick={() => setSidebarCollapsed(true)} 
+                className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md text-muted-foreground transition-all cursor-pointer"
+                title="Tutup Sidebar"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
             </div>
-            <span className="font-semibold text-sm tracking-tight text-foreground">
-              FirmanMan
-            </span>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4 transition-all duration-300">
+              <button 
+                onClick={() => setSidebarCollapsed(false)} 
+                className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md text-muted-foreground transition-all cursor-pointer"
+                title="Buka Sidebar"
+              >
+                <PanelLeft className="h-4 w-4" />
+              </button>
+              <div className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center font-bold text-xs shadow-sm">
+                FM
+              </div>
+            </div>
+          )}
 
+          {/* Navigation Links */}
           <nav className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -59,38 +92,62 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-150 ${
+                  title={sidebarCollapsed ? item.name : undefined}
+                  className={`flex items-center rounded-md text-sm font-medium transition-all duration-150 ${
+                    sidebarCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
+                  } ${
                     isActive
                       ? 'bg-accent text-accent-foreground border-l-2 border-primary'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  {item.name}
+                  {!sidebarCollapsed && <span>{item.name}</span>}
                 </Link>
               );
             })}
           </nav>
         </div>
 
+        {/* Sidebar Bottom: User & Logout */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-muted/40 border border-border/80">
-            <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border border-border">
-              <User className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
-            <div className="truncate">
-              <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
-              <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
-            </div>
-          </div>
+          {!sidebarCollapsed ? (
+            <div className="space-y-4 transition-all duration-300">
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-muted/40 border border-border/80">
+                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border border-border">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                </div>
+                <div className="truncate">
+                  <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
+                </div>
+              </div>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer"
-          >
-            <LogOut className="h-4 w-4" />
-            Keluar
-          </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer"
+              >
+                <LogOut className="h-4 w-4" />
+                Keluar
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 transition-all duration-300">
+              <div 
+                className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border border-border"
+                title={`${user?.name} (${user?.email})`}
+              >
+                <User className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 hover:bg-destructive/10 text-destructive rounded-md transition-all cursor-pointer"
+                title="Keluar"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
