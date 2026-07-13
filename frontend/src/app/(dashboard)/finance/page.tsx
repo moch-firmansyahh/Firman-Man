@@ -22,6 +22,170 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+// Separate Form component to prevent parent list re-renders on keystroke
+interface TransactionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingTx: Transaction | null;
+  onSave: (payload: { type: 'income' | 'expense'; amount: number; category: string; note: string | null; date: string }) => Promise<void>;
+  categories: string[];
+}
+
+function TransactionDialog({ open, onOpenChange, editingTx, onSave, categories }: TransactionDialogProps) {
+  const [type, setType] = useState<'income' | 'expense'>('expense');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('Makan');
+  const [note, setNote] = useState('');
+  const [date, setDate] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      if (editingTx) {
+        setType(editingTx.type);
+        setAmount(editingTx.amount.toString());
+        setCategory(editingTx.category);
+        setNote(editingTx.note || '');
+        setDate(new Date(editingTx.date).toISOString().split('T')[0]);
+      } else {
+        setType('expense');
+        setAmount('');
+        setCategory('Makan');
+        setNote('');
+        setDate(new Date().toISOString().split('T')[0]);
+      }
+    }
+  }, [open, editingTx]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onSave({
+        type,
+        amount: parseInt(amount),
+        category,
+        note: note || null,
+        date: new Date(date).toISOString(),
+      });
+      onOpenChange(false);
+    } catch (err) {
+      alert('Gagal memproses transaksi.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
+        <DialogHeader className="border-b border-border pb-2">
+          <DialogTitle className="text-sm font-semibold">
+            {editingTx ? 'Ubah Transaksi' : 'Tambah Transaksi'}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-md border border-border">
+            <button
+              type="button"
+              onClick={() => setType('expense')}
+              className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+                type === 'expense'
+                  ? 'bg-card text-foreground border border-border shadow-sm font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Pengeluaran
+            </button>
+            <button
+              type="button"
+              onClick={() => setType('income')}
+              className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
+                type === 'income'
+                  ? 'bg-card text-foreground border border-border shadow-sm font-bold'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Pemasukan
+            </button>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">Jumlah Transaksi (Rp)</label>
+            <Input
+              type="number"
+              required
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="bg-background border-input text-sm"
+              placeholder="50000"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Kategori</label>
+              <Select value={category} onValueChange={(val) => setCategory(val || 'Makan')}>
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder="Pilih Kategori" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Tanggal</label>
+              <Input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="bg-background border-input text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">Catatan</label>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+              className="bg-background border-input text-sm resize-none"
+              placeholder="Deskripsi singkat..."
+            />
+          </div>
+
+          <DialogFooter className="pt-2 gap-2 sm:gap-0 border-t border-border mt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onOpenChange(false)}
+              className="cursor-pointer text-xs"
+              disabled={submitting}
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              className="cursor-pointer text-xs"
+              disabled={submitting}
+            >
+              {submitting ? 'Menyimpan...' : editingTx ? 'Perbarui' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function FinancePage() {
   const {
     transactions,
@@ -37,13 +201,6 @@ export default function FinancePage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
 
-  // Form inputs
-  const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Makan');
-  const [note, setNote] = useState('');
-  const [date, setDate] = useState('');
-
   // Filters
   const [filterCategory, setFilterCategory] = useState('all');
   const [startDate, setStartDate] = useState('');
@@ -54,7 +211,6 @@ export default function FinancePage() {
   useEffect(() => {
     fetchTransactions();
     fetchSummary();
-    setDate(new Date().toISOString().split('T')[0]);
   }, [fetchTransactions, fetchSummary]);
 
   const handleFilterSubmit = (e: React.FormEvent) => {
@@ -75,43 +231,19 @@ export default function FinancePage() {
 
   const handleOpenAdd = () => {
     setEditingTx(null);
-    setType('expense');
-    setAmount('');
-    setCategory('Makan');
-    setNote('');
-    setDate(new Date().toISOString().split('T')[0]);
     setIsFormOpen(true);
   };
 
   const handleOpenEdit = (tx: Transaction) => {
     setEditingTx(tx);
-    setType(tx.type);
-    setAmount(tx.amount.toString());
-    setCategory(tx.category);
-    setNote(tx.note || '');
-    setDate(new Date(tx.date).toISOString().split('T')[0]);
     setIsFormOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const payload = {
-      type,
-      amount: parseInt(amount),
-      category,
-      note: note || null,
-      date: new Date(date).toISOString(),
-    };
-
-    try {
-      if (editingTx) {
-        await editTransaction(editingTx.id, payload);
-      } else {
-        await addTransaction(payload);
-      }
-      setIsFormOpen(false);
-    } catch (err) {
-      alert('Gagal memproses transaksi.');
+  const handleSaveTransaction = async (payload: { type: 'income' | 'expense'; amount: number; category: string; note: string | null; date: string }) => {
+    if (editingTx) {
+      await editTransaction(editingTx.id, payload);
+    } else {
+      await addTransaction(payload);
     }
   };
 
@@ -341,110 +473,13 @@ export default function FinancePage() {
         </Card>
       </div>
 
-      {/* Dialog Form Modal */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
-          <DialogHeader className="border-b border-border pb-2">
-            <DialogTitle className="text-sm font-semibold">
-              {editingTx ? 'Ubah Transaksi' : 'Tambah Transaksi'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-2 bg-muted p-1 rounded-md border border-border">
-              <button
-                type="button"
-                onClick={() => setType('expense')}
-                className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
-                  type === 'expense'
-                    ? 'bg-card text-foreground border border-border shadow-sm font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Pengeluaran
-              </button>
-              <button
-                type="button"
-                onClick={() => setType('income')}
-                className={`py-1.5 rounded text-xs font-semibold transition-all cursor-pointer ${
-                  type === 'income'
-                    ? 'bg-card text-foreground border border-border shadow-sm font-bold'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Pemasukan
-              </button>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Jumlah Transaksi (Rp)</label>
-              <Input
-                type="number"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="bg-background border-input text-sm"
-                placeholder="50000"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Kategori</label>
-                <Select value={category} onValueChange={(val) => setCategory(val || 'Makan')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Pilih Kategori" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1 min-w-[120px]">
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Tanggal</label>
-                <Input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="bg-background border-input text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Catatan</label>
-              <Textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={2}
-                className="bg-background border-input text-sm resize-none"
-                placeholder="Deskripsi singkat..."
-              />
-            </div>
-
-            <DialogFooter className="pt-2 gap-2 sm:gap-0 border-t border-border mt-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setIsFormOpen(false)}
-                className="cursor-pointer text-xs"
-              >
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                className="cursor-pointer text-xs"
-              >
-                {editingTx ? 'Perbarui' : 'Simpan'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <TransactionDialog
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        editingTx={editingTx}
+        onSave={handleSaveTransaction}
+        categories={categories}
+      />
     </div>
   );
 }

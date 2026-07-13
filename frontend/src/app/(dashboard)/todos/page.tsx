@@ -21,6 +21,163 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+// Separate Form component to prevent parent list re-renders on keystroke
+interface TodoDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingTodo: Todo | null;
+  onSave: (payload: { title: string; priority: Todo['priority']; status: Todo['status']; category: string; deadline: string | null }) => Promise<void>;
+  categories: string[];
+}
+
+function TodoDialog({ open, onOpenChange, editingTodo, onSave, categories }: TodoDialogProps) {
+  const [title, setTitle] = useState('');
+  const [priority, setPriority] = useState<Todo['priority']>('medium');
+  const [status, setStatus] = useState<Todo['status']>('pending');
+  const [category, setCategory] = useState('Kuliah');
+  const [deadline, setDeadline] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      if (editingTodo) {
+        setTitle(editingTodo.title);
+        setPriority(editingTodo.priority);
+        setStatus(editingTodo.status);
+        setCategory(editingTodo.category);
+        setDeadline(editingTodo.deadline ? new Date(editingTodo.deadline).toISOString().split('T')[0] : '');
+      } else {
+        setTitle('');
+        setPriority('medium');
+        setStatus('pending');
+        setCategory('Kuliah');
+        setDeadline('');
+      }
+    }
+  }, [open, editingTodo]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onSave({
+        title,
+        priority,
+        status,
+        category,
+        deadline: deadline ? new Date(deadline).toISOString() : null,
+      });
+      onOpenChange(false);
+    } catch (err) {
+      alert('Gagal menyimpan tugas.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
+        <DialogHeader className="border-b border-border pb-2">
+          <DialogTitle className="text-sm font-semibold">
+            {editingTodo ? 'Ubah Tugas' : 'Tambah Tugas'}
+          </DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">Judul Kegiatan</label>
+            <Input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-background border-input text-sm"
+              placeholder="Misalnya: Ngerjakan PR Alpro"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Prioritas</label>
+              <Select value={priority} onValueChange={(val) => setPriority((val as Todo['priority']) || 'medium')}>
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder="Prioritas" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
+                  <SelectItem value="low" className="rounded hover:bg-accent cursor-pointer">Rendah (Low)</SelectItem>
+                  <SelectItem value="medium" className="rounded hover:bg-accent cursor-pointer">Sedang (Medium)</SelectItem>
+                  <SelectItem value="high" className="rounded hover:bg-accent cursor-pointer">Tinggi (High)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Kategori</label>
+              <Select value={category} onValueChange={(val) => setCategory(val || 'Kuliah')}>
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder="Pilih Kategori" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Deadline (Opsional)</label>
+              <Input
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="bg-background border-input text-xs"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">Status</label>
+              <Select value={status} onValueChange={(val) => setStatus((val as Todo['status']) || 'pending')}>
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue placeholder="Status Pengerjaan" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
+                  <SelectItem value="pending" className="rounded hover:bg-accent cursor-pointer">Belum Dikerjakan</SelectItem>
+                  <SelectItem value="in_progress" className="rounded hover:bg-accent cursor-pointer">Sedang Dikerjakan</SelectItem>
+                  <SelectItem value="completed" className="rounded hover:bg-accent cursor-pointer">Selesai</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter className="pt-2 gap-2 sm:gap-0 border-t border-border mt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onOpenChange(false)}
+              className="cursor-pointer text-xs"
+              disabled={submitting}
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              className="cursor-pointer text-xs"
+              disabled={submitting}
+            >
+              {submitting ? 'Menyimpan...' : editingTodo ? 'Perbarui' : 'Simpan'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function TodosPage() {
   const {
     todos,
@@ -36,13 +193,6 @@ export default function TodosPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-
-  // Form inputs
-  const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<Todo['priority']>('medium');
-  const [status, setStatus] = useState<Todo['status']>('pending');
-  const [category, setCategory] = useState('Kuliah');
-  const [deadline, setDeadline] = useState('');
 
   // Filters
   const [filterStatus, setFilterStatus] = useState('all');
@@ -74,43 +224,19 @@ export default function TodosPage() {
 
   const handleOpenAdd = () => {
     setEditingTodo(null);
-    setTitle('');
-    setPriority('medium');
-    setStatus('pending');
-    setCategory('Kuliah');
-    setDeadline('');
     setIsFormOpen(true);
   };
 
   const handleOpenEdit = (todo: Todo) => {
     setEditingTodo(todo);
-    setTitle(todo.title);
-    setPriority(todo.priority);
-    setStatus(todo.status);
-    setCategory(todo.category);
-    setDeadline(todo.deadline ? new Date(todo.deadline).toISOString().split('T')[0] : '');
     setIsFormOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const payload = {
-      title,
-      priority,
-      status,
-      category,
-      deadline: deadline ? new Date(deadline).toISOString() : null,
-    };
-
-    try {
-      if (editingTodo) {
-        await editTodo(editingTodo.id, payload);
-      } else {
-        await addTodo(payload);
-      }
-      setIsFormOpen(false);
-    } catch (err) {
-      alert('Gagal menyimpan tugas.');
+  const handleSaveTodo = async (payload: { title: string; priority: Todo['priority']; status: Todo['status']; category: string; deadline: string | null }) => {
+    if (editingTodo) {
+      await editTodo(editingTodo.id, payload);
+    } else {
+      await addTodo(payload);
     }
   };
 
@@ -376,103 +502,13 @@ export default function TodosPage() {
         </Card>
       </div>
 
-      {/* Dialog Form Modal */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border text-foreground">
-          <DialogHeader className="border-b border-border pb-2">
-            <DialogTitle className="text-sm font-semibold">
-              {editingTodo ? 'Ubah Tugas' : 'Tambah Tugas'}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">Judul Kegiatan</label>
-              <Input
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="bg-background border-input text-sm"
-                placeholder="Misalnya: Ngerjakan PR Alpro"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Prioritas</label>
-                <Select value={priority} onValueChange={(val) => setPriority((val as Todo['priority']) || 'medium')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Prioritas" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
-                    <SelectItem value="low" className="rounded hover:bg-accent cursor-pointer">Rendah (Low)</SelectItem>
-                    <SelectItem value="medium" className="rounded hover:bg-accent cursor-pointer">Sedang (Medium)</SelectItem>
-                    <SelectItem value="high" className="rounded hover:bg-accent cursor-pointer">Tinggi (High)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Kategori</label>
-                <Select value={category} onValueChange={(val) => setCategory(val || 'Kuliah')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Pilih Kategori" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat} className="rounded hover:bg-accent cursor-pointer">{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Deadline (Opsional)</label>
-                <Input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="bg-background border-input text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">Status</label>
-                <Select value={status} onValueChange={(val) => setStatus((val as Todo['status']) || 'pending')}>
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue placeholder="Status Pengerjaan" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border border-border text-foreground rounded-md shadow-md p-1">
-                    <SelectItem value="pending" className="rounded hover:bg-accent cursor-pointer">Belum Dikerjakan</SelectItem>
-                    <SelectItem value="in_progress" className="rounded hover:bg-accent cursor-pointer">Sedang Dikerjakan</SelectItem>
-                    <SelectItem value="completed" className="rounded hover:bg-accent cursor-pointer">Selesai</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <DialogFooter className="pt-2 gap-2 sm:gap-0 border-t border-border mt-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setIsFormOpen(false)}
-                className="cursor-pointer text-xs"
-              >
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                className="cursor-pointer text-xs"
-              >
-                {editingTodo ? 'Perbarui' : 'Simpan'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <TodoDialog
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        editingTodo={editingTodo}
+        onSave={handleSaveTodo}
+        categories={categories}
+      />
     </div>
   );
 }
