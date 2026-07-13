@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Wallet, CheckSquare, LogOut, Menu, X, User, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { useState } from 'react';
+import { useTodoStore } from '@/store/todo-store';
 import { ThemeToggle } from '@/components/theme-toggle';
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
+  const { summary: todoSummary } = useTodoStore();
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -44,65 +46,73 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-background text-foreground transition-colors duration-200">
       {/* Sidebar for Desktop */}
       <aside 
-        className={`hidden md:flex flex-col bg-card border-r border-border sticky top-0 h-screen justify-between z-30 transition-all duration-300 ease-in-out ${
+        className={`hidden md:flex flex-col bg-[#f4f4f5] dark:bg-zinc-950 border-r border-border sticky top-0 h-screen justify-between z-30 transition-all duration-300 ease-in-out ${
           sidebarCollapsed ? 'w-16 px-2 py-5' : 'w-64 p-5'
         }`}
       >
         <div className="space-y-6">
           {/* Sidebar Top: Logo & Toggle Button */}
-          {!sidebarCollapsed ? (
-            <div className="flex items-center justify-between px-2 transition-all duration-300">
-              <div className="flex items-center gap-2">
-                <div className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center font-bold text-xs shadow-sm">
-                  FM
-                </div>
-                <span className="font-semibold text-sm tracking-tight text-foreground">
-                  FirmanMan
-                </span>
-              </div>
-              <button 
-                onClick={() => setSidebarCollapsed(true)} 
-                className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md text-muted-foreground transition-all cursor-pointer"
-                title="Tutup Sidebar"
-              >
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-4 transition-all duration-300">
-              <button 
-                onClick={() => setSidebarCollapsed(false)} 
-                className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md text-muted-foreground transition-all cursor-pointer"
-                title="Buka Sidebar"
-              >
-                <PanelLeft className="h-4 w-4" />
-              </button>
-              <div className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center font-bold text-xs shadow-sm">
+          <div className={`flex items-center ${sidebarCollapsed ? 'flex-col gap-3 justify-center' : 'justify-between'} px-2 transition-all duration-300`}>
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 rounded-full bg-white dark:bg-zinc-900 border border-border shadow-sm flex items-center justify-center font-bold text-sm text-[#f97316] shrink-0">
                 FM
               </div>
+              <span className={`font-semibold text-sm tracking-tight text-foreground transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                sidebarCollapsed ? 'w-0 opacity-0 scale-90' : 'w-auto opacity-100 ml-1'
+              }`}>
+                FirmanMan
+              </span>
             </div>
-          )}
+            <button 
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)} 
+              className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md text-muted-foreground transition-all cursor-pointer shrink-0"
+              title={sidebarCollapsed ? "Buka Sidebar" : "Tutup Sidebar"}
+            >
+              {sidebarCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            </button>
+          </div>
 
           {/* Navigation Links */}
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
+              
+              // Dynamic task count badge based on DB state
+              let badge = null;
+              if (item.name === 'Tugas' && todoSummary?.pending) {
+                badge = todoSummary.pending;
+              }
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   title={sidebarCollapsed ? item.name : undefined}
-                  className={`flex items-center rounded-md text-sm font-medium transition-all duration-150 ${
-                    sidebarCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2'
-                  } ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-md text-xs font-semibold transition-all duration-300 ${
                     isActive
-                      ? 'bg-accent text-accent-foreground border-l-2 border-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                      ? 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  {!sidebarCollapsed && <span>{item.name}</span>}
+                  <div className="flex items-center min-w-0">
+                    <Icon className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
+                      isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-muted-foreground'
+                    }`} />
+                    <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap text-left ${
+                      sidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100 ml-2.5'
+                    }`}>
+                      {item.name}
+                    </span>
+                  </div>
+                  
+                  {badge !== null && (
+                    <span className={`text-[9px] bg-zinc-200 dark:bg-zinc-800 text-zinc-650 dark:text-zinc-400 px-2 py-0.5 rounded-full font-bold transition-all duration-300 ${
+                      sidebarCollapsed ? 'w-0 h-0 opacity-0 scale-75 overflow-hidden' : 'w-auto opacity-100'
+                    }`}>
+                      {badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -111,43 +121,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Sidebar Bottom: User & Logout */}
         <div className="space-y-4">
-          {!sidebarCollapsed ? (
-            <div className="space-y-4 transition-all duration-300">
-              <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-muted/40 border border-border/80">
-                <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border border-border">
-                  <User className="h-3.5 w-3.5 text-muted-foreground" />
-                </div>
-                <div className="truncate">
-                  <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
-                </div>
-              </div>
+          <div className={`flex items-center gap-2.5 px-3 py-2 rounded-md bg-muted/40 border border-border/80 transition-all duration-300 ${
+            sidebarCollapsed ? 'justify-center py-2.5 px-0 border-none bg-transparent' : ''
+          }`}>
+            <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border border-border shrink-0">
+              <User className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            
+            <div className={`truncate transition-all duration-300 overflow-hidden ${
+              sidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+            }`}>
+              <p className="text-xs font-semibold text-foreground truncate">{user?.name}</p>
+              <p className="text-[9px] text-muted-foreground truncate">{user?.email}</p>
+            </div>
+          </div>
 
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer"
-              >
-                <LogOut className="h-4 w-4" />
-                Keluar
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3 transition-all duration-300">
-              <div 
-                className="h-7 w-7 rounded-full bg-muted flex items-center justify-center border border-border"
-                title={`${user?.name} (${user?.email})`}
-              >
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <button
-                onClick={handleLogout}
-                className="p-2 hover:bg-destructive/10 text-destructive rounded-md transition-all cursor-pointer"
-                title="Keluar"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+          <button
+            onClick={handleLogout}
+            className={`flex items-center rounded-md text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive transition-all duration-300 ${
+              sidebarCollapsed ? 'justify-center p-2.5 w-full' : 'gap-2.5 w-full px-3 py-2'
+            }`}
+            title="Keluar"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            <span className={`transition-all duration-300 overflow-hidden whitespace-nowrap ${
+              sidebarCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+            }`}>
+              Keluar
+            </span>
+          </button>
         </div>
       </aside>
 
